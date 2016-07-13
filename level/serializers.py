@@ -19,39 +19,40 @@ class LevelSerializer(serializers.ModelSerializer):
         '''
 
         super(LevelSerializer, self).__init__(*args, **kwargs)
-        opt_fields = self.context['request'].query_params.get('opt_fields')
-        if opt_fields:
-            opt_fields = opt_fields.split(',')
-            # Remove not specified fields
-            to_show = set(opt_fields)
-            default = set(self.fields.keys())
-            for field in default - to_show:
-                self.fields.pop(field)
+        if 'request' in self.context:
+            opt_fields = self.context['request'].query_params.get('opt_fields')
+            if opt_fields:
+                opt_fields = opt_fields.split(',')
+                # Remove not specified fields
+                to_show = set(opt_fields)
+                default = set(self.fields.keys())
+                for field in default - to_show:
+                    self.fields.pop(field)
 
-
+    member_count = serializers.IntegerField(read_only=True)
     name = serializers.CharField(max_length=255)
-    remit_limit  = serializers.CharField(required=False, max_length=255)
-    online_limit = serializers.CharField(required=False, max_length=255)
-    withdraw_limit = serializers.CharField(required=False, max_length=255)
-    withdraw_fee = serializers.FloatField()
-    withdraw_fee_way = serializers.CharField(required=False, max_length=100)
-    reg_present = serializers.CharField(required=False, max_length=100)
-    remit_check = serializers.CharField(max_length=100)
+    remit_limit  = serializers.CharField(required=False, max_length=255, allow_null=True)
+    online_limit = serializers.CharField(required=False, max_length=255, allow_null=True)
+    withdraw_limit = serializers.CharField(required=False, max_length=255, allow_null=True)
+    # withdraw_fee = serializers.FloatField()
+    withdraw_fee = serializers.CharField(max_length=100)
+    reg_present = serializers.CharField(required=False, max_length=100, allow_null=True)
+    remit_check = serializers.CharField(max_length=100, allow_null=True)
     service_rate = serializers.IntegerField()
     memo = serializers.CharField(required=False)
-    status = serializers.IntegerField()
-    cdt_deposit_num = serializers.IntegerField(required=False)
-    cdt_deposit_amount = serializers.IntegerField(required=False)
-    cdt_deposit_max = serializers.IntegerField(required=False)
-    cdt_withdraw_num = serializers.IntegerField(required=False)
-    cdt_withdraw_amount = serializers.IntegerField(required=False)
+    status = serializers.IntegerField(default=1, allow_null=True)
+    cdt_deposit_num = serializers.IntegerField(required=False, allow_null=True)
+    cdt_deposit_amount = serializers.IntegerField(required=False, allow_null=True)
+    cdt_deposit_max = serializers.IntegerField(required=False, allow_null=True)
+    cdt_withdraw_num = serializers.IntegerField(required=False, allow_null=True)
+    cdt_withdraw_amount = serializers.IntegerField(required=False, allow_null=True)
     remit_discounts = DiscountSerializer(required=False, source='level_remit_discount', many=True)
     online_discounts = DiscountSerializer(required=False, source='level_online_discount', many=True)
     __fields_to_validate = [
                             'remit_limit',
                             'online_limit',
                             'withdraw_limit',
-                            'withdraw_fee_way',
+                            'withdraw_fee',
                             'reg_present',
                             'remit_check',
                             ]
@@ -61,12 +62,14 @@ class LevelSerializer(serializers.ModelSerializer):
         model = Level
         depth = 2
         fields = (
+                'member_count',
+                'id',
                 'name',
                 'remit_limit',
                 'online_limit',
                 'withdraw_limit',
                 'withdraw_fee',
-                'withdraw_fee_way',
+                # 'withdraw_fee_way',
                 'reg_present',
                 'remit_check',
                 'service_rate',
@@ -101,5 +104,3 @@ class LevelSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Invalid data')
 
         return validated_data
-
-

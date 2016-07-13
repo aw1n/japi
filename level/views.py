@@ -2,6 +2,7 @@ from rest_framework import renderers, viewsets, mixins, status, filters, parsers
 from rest_framework.response import Response
 from django.core import serializers
 from django.http import Http404
+from django.db.models import Count
 from level.serializers import LevelSerializer
 from level.filters import LevelFilter
 from level.models import Level
@@ -20,7 +21,7 @@ level_fields = [
                 'online_limit',
                 'withdraw_limit',
                 'withdraw_fee',
-                'withdraw_fee_way',
+                # 'withdraw_fee_way',
                 'reg_present',
                 'remit_check',
                 'service_rate',
@@ -37,7 +38,7 @@ fields_to_convert = [
                     'remit_limit',
                     'online_limit',
                     'withdraw_limit',
-                    'withdraw_fee_way',
+                    'withdraw_fee',
                     'reg_present',
                     'remit_check',
                     ]
@@ -90,7 +91,9 @@ class LevelViewSet(mixins.RetrieveModelMixin,
                 levels = levels.filter(status=request.GET.get('status'))
             if request.GET.get('name'):
                 levels = levels.filter(name=request.GET.get('name'))
-            serializer = LevelSerializer(levels, context={'request': request}, many=True)
+            serializer = LevelSerializer(levels.annotate(member_count=Count('member_level', distinct=True)),
+                                            context={'request': request},
+                                            many=True)
 
             start_idx, max_idx = self.__get_query_index(
                                                     request.GET.get('start'),
@@ -136,7 +139,8 @@ class LevelViewSet(mixins.RetrieveModelMixin,
         response = dict()
 
         for field in level_fields:
-            level_dict[field] = request.data.get(field)
+            if request.data.get(field) is not None:
+                level_dict[field] = request.data.get(field)
 
         remit_discount = request.data.get('remit_discounts')
         online_discount = request.data.get('online_discounts')
@@ -151,9 +155,9 @@ class LevelViewSet(mixins.RetrieveModelMixin,
             serializer.save()
 
             if remit_discount:
-                self.__create_update_add_discount(level.level_remit_discount, remit_discount)
+                self.__create_update_discount(level.level_remit_discount, remit_discount)
             if online_discount:
-                self.__create_update_add_discount(level.level_online_discount, online_discount)
+                self.__create_update_discount(level.level_online_discount, online_discount)
 
             # Format data to display.
             to_display = self.__convert_data_to_display(serializer.data)
@@ -164,7 +168,7 @@ class LevelViewSet(mixins.RetrieveModelMixin,
             response['error'] = err
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
-    def update(self, pk, request):
+    def update(self, request, pk):
         '''
         @fn update
         @brief
@@ -175,7 +179,8 @@ class LevelViewSet(mixins.RetrieveModelMixin,
         response = dict()
 
         for field in level_fields:
-            level_dict[field] = request.data.get(field)
+            if request.data.get(field) is not None:
+                level_dict[field] = request.data.get(field)
 
         remit_discount = request.data.get('remit_discounts')
         online_discount = request.data.get('online_discounts')
@@ -190,26 +195,29 @@ class LevelViewSet(mixins.RetrieveModelMixin,
             serializer.save()
 
             if remit_discount:
-                self.__create_update_add_discount(level.level_remit_discount, remit_discount)
+                self.__create_update_discount(level.level_remit_discount, remit_discount)
             if online_discount:
-                self.__create_update_add_discount(level.level_online_discount, online_discount)
+                self.__create_update_discount(level.level_online_discount, online_discount)
 
             # Format data to display.
             to_display = self.__convert_data_to_display(serializer.data)
 
-            return Response(to_display, status=status.HTTP_201_CREATED)
+            return Response(to_display, status=status.HTTP_200_OK)
         except Exception as err:
             response['error'] = err
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
 
-    def __create_update_add_discount(self, lv_discount_inst, discount_details={}):
+    def __create_update_discount(self, lv_discount_inst, discount_details={}):
         '''
-        @fn __create_update_add_discount
+        @fn __create_update_discount
         @brief
             Creates or updates discount details then adds the discount to the given level.
         '''
 
+        # clear the relationship for the level discount instance
+        lv_discount_inst.clear()
+        # process new relationships
         for discount in discount_details:
             # check if discout had id
             if not discount.get('id'):
@@ -228,14 +236,16 @@ class LevelViewSet(mixins.RetrieveModelMixin,
 
     def __convert_data_to_display(self, data):
         '''
+        @fn __convert_data_to_display
+        @brief
+            Converts the corresponding data to dictionary
         '''
 
-        to_display = dict()
+        to_display = collections.OrderedDict()
         for key, val in data.iteritems():
             if key in fields_to_convert:
                 val = collections.OrderedDict(ast.literal_eval(val))
             to_display[key] = val
-
         return to_display
 
     def __get_query_index(self, start, max_val):

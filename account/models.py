@@ -1,9 +1,10 @@
 from __future__ import unicode_literals
 from django.db import models
+from django.contrib.auth.models import User
 
 from level.models import Level
 from configsettings.models import ReturnSettings, CommissionSettings
-from bank.models import BankingInfo
+from bank.models import Bank
 
 AGENT_STATUS_OPTIONS = (
 	('0', 'Suspended'),
@@ -51,6 +52,7 @@ class Agent(models.Model):
 		Agent model class
 	'''
 
+	user = models.OneToOneField(User,related_name='agent_user')
 	username = models.CharField(unique=True, max_length=100, blank=False, null=False)
 	register_at = models.DateTimeField(auto_now=False, auto_now_add=True)
 	status = models.IntegerField(default=1, null=True, blank=True, choices=AGENT_STATUS_OPTIONS)
@@ -68,7 +70,7 @@ class Agent(models.Model):
 	qq = models.CharField(max_length=255, null=True, blank=True)
 	promo_code = models.CharField(max_length=255, null=True, blank=True)
 	memo = models.TextField(null=True, blank=True)
-	bank = models.ForeignKey(BankingInfo, null=True, blank=True,related_name="agent_banking_info")
+	bank = models.ForeignKey(Bank, null=True, blank=True,related_name="agent_banking_info")
 
 	class Meta:
 		db_table = "account_agent"
@@ -101,6 +103,7 @@ class Member(models.Model):
 		Member model class
 	'''
 
+	user = models.OneToOneField(User,related_name='member_user')
 	username = models.CharField(unique=True, max_length=100)
 	real_name = models.CharField(max_length=100, blank=True, null=True)
 	phone = models.CharField(max_length=50, blank=True, null=True)
@@ -115,7 +118,7 @@ class Member(models.Model):
 	status = models.IntegerField(default=1, choices=MEMBER_STATUS_OPTIONS)
 	return_settings = models.OneToOneField(ReturnSettings, null=True, blank=True, related_name="member_return_settings")
 	level_lock = models.IntegerField(default=1, choices=LEVEL_LOCK_OPTIONS)
-	banking_info = models.OneToOneField(BankingInfo, null=True, blank=True, related_name="member_banking_info")
+	bank = models.OneToOneField(Bank, null=True, blank=True, related_name="member_banking_info")
 	agent = models.OneToOneField(Agent, null=True, blank=True, related_name="member_agent")
 
 	class Meta:

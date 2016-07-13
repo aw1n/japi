@@ -1,18 +1,42 @@
-from django.shortcuts import render
+from rest_framework import renderers, viewsets, mixins, status, filters, parsers
 from rest_framework.response import Response
-from rest_framework import mixins, status, viewsets
-from configsettings.models import CommissionSettings
-from configsettings.serializers import CommissionSettingsSerializer
+from django.core import serializers
+from django.http import Http404
+from configsettings.serializers import DiscountSerializer, CommissionSettingsSerializer
+from configsettings.filters import DiscountFilter
+from configsettings.models import Discount, CommissionSettings
+from jaguar.utils import ESPagination
+from configsettings.models import Discount
+
+import django_filters
 
 
-class CommissionSettingsViewSet(mixins.RetrieveModelMixin, mixins.CreateModelMixin, 
-                                mixins.ListModelMixin, mixins.UpdateModelMixin, 
-                                viewsets.GenericViewSet):
+class DiscountViewSet(mixins.RetrieveModelMixin,
+                        mixins.CreateModelMixin,
+                        mixins.ListModelMixin,
+                        mixins.UpdateModelMixin,
+                        viewsets.GenericViewSet):
     '''
-    @class AgentViewSet
+    @class DiscountViewSet
     @brief
-        Viewset for agent
+        View set for Discount model
+        Handles HTTP requests such as GET, PUT, and POST
     '''
+
+    queryset = Discount.objects.all()
+    renderer_classes = [renderers.JSONRenderer]
+    serializer_class = DiscountSerializer
+    filter_class = DiscountFilter
+    filter_backends = (filters.DjangoFilterBackend,)
+    filter_fields = ('type')
+    pagination_class = ESPagination
+
+
+class CommissionSettingsViewSet(mixins.RetrieveModelMixin, 
+                                mixins.CreateModelMixin, 
+                                mixins.ListModelMixin, 
+                                mixins.UpdateModelMixin, 
+                                viewsets.GenericViewSet):
     
     model = CommissionSettings
     serializer_class = CommissionSettingsSerializer

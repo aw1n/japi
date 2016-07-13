@@ -1,9 +1,10 @@
 import datetime
+from django.contrib.auth.models import User
 from rest_framework import serializers
 from django.db import IntegrityError
 from rest_framework.parsers import JSONParser
 from account.models import (Agent, Member, AgentApplication)
-from bank.models import BankingInfo
+from bank.models import Bank
 from bank.serializers import BankSerializer
 from level.models import Level
 from configsettings.serializers import CommissionSettingsSerializer
@@ -32,10 +33,10 @@ class AgentSerializer(serializers.ModelSerializer):
                 self.fields.pop(field)
 
     bank = BankSerializer(required=False)
-    # commission_settings = CommissionSettingsSerializer(required=False)
+    user = serializers.PrimaryKeyRelatedField(required=False,queryset=User.objects.all())
     commission_settings = serializers.PrimaryKeyRelatedField(required=False, allow_null=True, queryset=CommissionSettings.objects.all())
     level = serializers.IntegerField(required=True)
-    # parent_agent = serializers.PrimaryKeyRelatedField(required=False, allow_null=True, queryset=Agent.objects.all())
+    parent_agent = serializers.PrimaryKeyRelatedField(required=False, allow_null=True, queryset=Agent.objects.all())
 
     class Meta:
         model = Agent
@@ -44,19 +45,23 @@ class AgentSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         bank_data = validated_data.pop('bank')
 
+        user = User.objects.create(username=validated_data['username'])
+        user.save()
+        validated_data['user'] = user
+
         if 'id' in bank_data:
             #update bank info
             try:
-                bank_info = BankingInfo.objects.get(pk=bank_data['id'])
+                bank_info = Bank.objects.get(pk=bank_data['id'])
                 bank_info.account = bank_data['account']
                 bank_info.save()
                 validated_data['bank'] = bank_info
-            except BankingInfo.DoesNotExist:
+            except Bank.DoesNotExist:
                 #initial data
-                b = BankingInfo.objects.create(**bank_data)
+                b = Bank.objects.create(**bank_data)
                 validated_data['bank'] = b
         else:
-            b = BankingInfo.objects.create(**bank_data)
+            b = Bank.objects.create(**bank_data)
             validated_data['bank'] = b
 
 
@@ -158,7 +163,8 @@ class MemberSerializer(serializers.ModelSerializer):
             for field in default - to_show:
                 self.fields.pop(field)
 
-
+    bank = BankSerializer(required=False)
+    user = serializers.PrimaryKeyRelatedField(required=False,queryset=User.objects.all())
     # username = serializers.CharField(required=False, max_length=100)
     # real_name = serializers.CharField(max_length=100, required=False)
     # phone = serializers.CharField(max_length=50, required=False)
@@ -172,11 +178,38 @@ class MemberSerializer(serializers.ModelSerializer):
     # status = serializers.IntegerField(required=False, default=1)
     # return_settings = serializers.PrimaryKeyRelatedField(required=False,queryset=ReturnSettings.objects.all())
     # level_lock = serializers.IntegerField(required=False)
-    # banking_info = serializers.PrimaryKeyRelatedField(required=False,queryset=BankingInfo.objects.all()) 
+    # banking_info = serializers.PrimaryKeyRelatedField(required=False,queryset=Bank.objects.all()) 
     # agent = serializers.PrimaryKeyRelatedField(required=False,queryset=Agent.objects.all())   
 
     class Meta:
         model = Member
+
+
+    def create(self, validated_data):
+        bank_data = validated_data.pop('bank')
+
+        user = User.objects.create(username=validated_data['username'])
+        user.save()
+        validated_data['user'] = user
+
+        if 'id' in bank_data:
+            #update bank info
+            try:
+                bank_info = Bank.objects.get(pk=bank_data['id'])
+                bank_info.account = bank_data['account']
+                bank_info.save()
+                validated_data['bank'] = bank_info
+            except Bank.DoesNotExist:
+                #initial data
+                b = Bank.objects.create(**bank_data)
+                validated_data['bank'] = b
+        else:
+            b = Bank.objects.create(**bank_data)
+            validated_data['bank'] = b
+
+
+        member = Member.objects.create(**validated_data)
+        return member
 
     def validate(self, data):
         request = self.context['request']

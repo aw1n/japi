@@ -28,7 +28,7 @@ router.register(r'agentapplication', account.AgentApplicationViewSet, 'agentappl
 router.register(r'member', account.MemberViewSet, 'member')
 router.register(r'level', level.LevelViewSet, base_name='level')
 router.register(r'commissionsettings', settings.CommissionSettingsViewSet, base_name='commissionsettings')
-# router.register(r'discount', settings.DiscountViewSet, base_name='discount')
+router.register(r'discount', settings.DiscountViewSet, base_name='discount')
 # router.register(r'memberapplication', account.MemberApplicationViewSet, 'memberapplication')
 
 urlpatterns = [

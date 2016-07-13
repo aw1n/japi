@@ -7,11 +7,11 @@ STATUS_OPTIONS = (
     ('1', 'Active')
 )
 
-class BankingInfo(models.Model):
+class Bank(models.Model):
 	'''
-	@class BankingInfo
+	@class Bank
 	@brief
-		BankingInfo model class
+		Bank model class
 	'''
 
 	id			= models.AutoField(primary_key=True)
@@ -22,4 +22,4 @@ class BankingInfo(models.Model):
 	memo		= models.CharField(max_length=100, blank=True, null=True)
 
 	class Meta:
-		db_table = "bank_bankinginfo"
+		db_table = "bank"

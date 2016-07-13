@@ -10,19 +10,20 @@ class DiscountSerializer(serializers.ModelSerializer):
         Serializer class for Discount
     '''
 
-    # def __init__(self, *args, **kwargs):
-    #     '''
-    #     '''
+    def __init__(self, *args, **kwargs):
+        '''
+        '''
 
-    #     super(DiscountSerializer, self).__init__(*args, **kwargs)
-    #     opt_fields = self.context['request'].query_params.get('opt_fields')
-    #     if opt_fields:
-    #         opt_fields = opt_fields.split(',')
-    #         # Remove not specified fields
-    #         to_show = set(opt_fields)
-    #         default = set(self.fields.keys())
-    #         for field in default - to_show:
-    #             self.fields.pop(field)
+        super(DiscountSerializer, self).__init__(*args, **kwargs)
+        if 'request' in self.context:
+            opt_fields = self.context['request'].query_params.get('opt_fields')
+            if opt_fields:
+                opt_fields = opt_fields.split(',')
+                # Remove not specified fields
+                to_show = set(opt_fields)
+                default = set(self.fields.keys())
+                for field in default - to_show:
+                    self.fields.pop(field)
 
 
     type                  = serializers.CharField(max_length=10)

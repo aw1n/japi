@@ -1,7 +1,7 @@
 import datetime
 from rest_framework import serializers
 from django.db import IntegrityError
-from bank.models import BankingInfo
+from bank.models import Bank
 
 class BankSerializer(serializers.ModelSerializer):
     '''
@@ -25,6 +25,6 @@ class BankSerializer(serializers.ModelSerializer):
     #             self.fields.pop(field)
 
     class Meta:
-        model = BankingInfo
+        model = Bank
         fields = ('id', 'bank_name', 'province', 'city', 'account', 'memo')
         # extra_kwargs = {'id':{'read_only': False, 'required': False}}

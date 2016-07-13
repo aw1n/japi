@@ -7,7 +7,7 @@ from rest_framework import mixins, status, viewsets
 from account.filters import AgentFilter
 from account.models import Agent, Member, AgentApplication
 from account.serializers import AgentSerializer, AgentRetrieveSerializer, MemberSerializer, AgentApplicationSerializer
-from bank.models import BankingInfo
+from bank.models import Bank
 
 
 class AgentViewSet( mixins.RetrieveModelMixin, mixins.CreateModelMixin, 
@@ -126,13 +126,13 @@ class MemberViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin, mixins.Cre
     #     serializer = MemberSerializer(member)
     #     return Response(serializer.data)
 
-    def list(self, request):
-        response = {}
-        queryset = Member.objects.all()
-        serializer = MemberSerializer(queryset, context={"request":request}, many=True)
-        response['status_code'] = status.HTTP_200_OK
-        response['data'] = serializer.data
-        return Response(response)
+    # def list(self, request):
+    #     response = {}
+    #     queryset = Member.objects.all()
+    #     serializer = MemberSerializer(queryset, context={"request":request}, many=True)
+    #     response['status_code'] = status.HTTP_200_OK
+    #     response['data'] = serializer.data
+    #     return Response(response)
 
     def update(self, request, pk, format=None):
         response = {}
