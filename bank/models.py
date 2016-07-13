@@ -15,11 +15,11 @@ class BankingInfo(models.Model):
 	'''
 
 	id			= models.AutoField(primary_key=True)
-	bank_name	= models.CharField(max_length=100)
-	province	= models.CharField(max_length=100)
-	city		= models.CharField(max_length=100)
-	account		= models.CharField(max_length=100)
-	memo		= models.CharField(max_length=100)
+	bank_name	= models.CharField(max_length=100, blank=True, null=True)
+	province	= models.CharField(max_length=100, blank=True, null=True)
+	city		= models.CharField(max_length=100, blank=True, null=True)
+	account		= models.CharField(max_length=100, blank=True, null=True)
+	memo		= models.CharField(max_length=100, blank=True, null=True)
 
 	class Meta:
 		db_table = "bank_bankinginfo"
