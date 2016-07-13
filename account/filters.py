@@ -1,36 +1,22 @@
 from django.contrib.auth.models import User
 import django_filters
+from django_filters import filters
 from account.models import Agent, Member
 
 class AgentFilter(django_filters.FilterSet):
-    username = django_filters.CharFilter(name="username", lookup_type="contains")
-    # register_at = django_filters.DateFromToRangeFilter()
-
-
-    class Meta:
-        model  = Agent
-        fields = ['username',
-                  'register_at',
-                  'status',
-                  'commission_settings',
-                  'default_return_settings',
-                  'level',
-                  'parent_agent',
-                  'promo_code',
-                  'gender',
-                  'real_name',
-                  'phone',
-                  'email',
-                  'wechat',
-                  'qq',
-                  'bank',
-                  'bank__account']
-
-# class CustomerFilter(django_filters.FilterSet):
-#     reseller_name = django_filters.CharFilter(name="profile__reseller_name", lookup_type="icontains")
-#     company_name  = django_filters.CharFilter(name="profile__company_name", lookup_type="icontains")
-#     created_by    = django_filters.CharFilter(name="profile__created_by", lookup_type="exact")
+    username_q = django_filters.CharFilter(name="username", lookup_type="contains")
+    real_name_q = django_filters.CharFilter(name="real_name", lookup_type="contains")
+    phone_q = django_filters.CharFilter(name="phone", lookup_type="contains")
+    email_q = django_filters.CharFilter(name="email", lookup_type="contains")
+    wechat_q = django_filters.CharFilter(name="wechat", lookup_type="contains")
+    qq_q = django_filters.CharFilter(name="qq", lookup_type="contains")
+    qq_q = django_filters.CharFilter(name="qq", lookup_type="contains")
+    bank_name = django_filters.CharFilter(name="bank__bank_name", lookup_type="exact")
+    bank_name_q = django_filters.CharFilter(name="bank__bank_name", lookup_type="contains")
+    bank_account = django_filters.CharFilter(name="bank__account", lookup_type="exact")
+    bank_account_q = django_filters.CharFilter(name="bank__account", lookup_type="contains")
+    return_settings = django_filters.CharFilter(name="default_return_settings", lookup_type="exact")
+    register_at = django_filters.DateFromToRangeFilter()
     
-#     class Meta:
-#         model  = User
-#         fields = ['reseller_name','company_name','created_by']
+    class Meta:
+        model = Agent

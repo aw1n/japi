@@ -40,8 +40,9 @@ INSTALLED_APPS = [
     'rest_framework',
     'account',
     'level',
-    'settings',
-    'bank'
+    'bank',
+    'configsettings',
+    'corsheaders'
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -53,12 +54,20 @@ MIDDLEWARE_CLASSES = [
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
+
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ORIGIN_WHITELIST = (
+        '192.168.2.121:8000'
+    )
 
 ROOT_URLCONF = 'jaguar.urls'
 
 REST_FRAMEWORK = {
-    'EXCEPTION_HANDLER': 'jaguar.utils.custom_exception_handler'
+    'EXCEPTION_HANDLER': 'jaguar.utils.custom_exception_handler',
+    'DEFAULT_PAGINATION_CLASS': 'jaguar.utils.ESPagination',
+    'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',)
 }
 
 TEMPLATES = [

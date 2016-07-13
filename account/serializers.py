@@ -32,8 +32,8 @@ class AgentSerializer(serializers.ModelSerializer):
                 self.fields.pop(field)
 
     bank = BankSerializer(required=False)
-    commission_settings = CommissionSettingsSerializer(required=False)
-    # commission_settings = serializers.PrimaryKeyRelatedField(required=False, allow_null=True, queryset=CommissionSettings.objects.all())
+    # commission_settings = CommissionSettingsSerializer(required=False)
+    commission_settings = serializers.PrimaryKeyRelatedField(required=False, allow_null=True, queryset=CommissionSettings.objects.all())
     level = serializers.IntegerField(required=True)
     # parent_agent = serializers.PrimaryKeyRelatedField(required=False, allow_null=True, queryset=Agent.objects.all())
 

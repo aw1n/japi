@@ -8,7 +8,6 @@ from account.filters import AgentFilter
 from account.models import Agent, Member, AgentApplication
 from account.serializers import AgentSerializer, AgentRetrieveSerializer, MemberSerializer, AgentApplicationSerializer
 from bank.models import BankingInfo
-from bank.forms import BankingInfoForm
 
 
 class AgentViewSet( mixins.RetrieveModelMixin, mixins.CreateModelMixin, 
@@ -25,22 +24,22 @@ class AgentViewSet( mixins.RetrieveModelMixin, mixins.CreateModelMixin,
     queryset = Agent.objects.all()
     filter_class = AgentFilter
     filter_backends = (filters.OrderingFilter, filters.DjangoFilterBackend)
-    filter_fields = ('username',
-                      'register_at',
-                      'status',
-                      'commission_settings',
-                      'default_return_settings',
-                      'level',
-                      'parent_agent',
-                      'promo_code',
-                      'gender',
-                      'real_name',
-                      'phone',
-                      'email',
-                      'wechat',
-                      'qq',
-                      'bank',
-                      'account')
+    # filter_fields = ('username',
+    #                   'register_at',
+    #                   'status',
+    #                   'commission_settings',
+    #                   'default_return_settings',
+    #                   'level',
+    #                   'parent_agent',
+    #                   'promo_code',
+    #                   'gender',
+    #                   'real_name',
+    #                   'phone',
+    #                   'email',
+    #                   'wechat',
+    #                   'qq',
+    #                   'bank',
+    #                   'account')
 
     # def list(self, request):
     #     response = {}
@@ -66,7 +65,7 @@ class AgentViewSet( mixins.RetrieveModelMixin, mixins.CreateModelMixin,
 
         try:
             agent = Agent.objects.get(id=pk)
-            serializer = AgentSerializer(agent, data=request.data, context={'request': request})
+            serializer = AgentSerializer(agent, data=request.data, context={'request': request}, partial=True)
 
             if serializer.is_valid():
                 serializer.save()
