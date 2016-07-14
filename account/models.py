@@ -7,37 +7,37 @@ from configsettings.models import ReturnSettings, CommissionSettings
 from bank.models import Bank
 
 AGENT_STATUS_OPTIONS = (
-	('0', 'Suspended'),
-	('1', 'Active')
+	(0, 'Suspended'),
+	(1, 'Active')
 )
 
 AGENT_APPLICATION_STATUS_OPTIONS = (
-	('0', 'Rejected'),
-	('1', 'Accepted')
+	(0, 'Rejected'),
+	(1, 'Accepted')
 )
 
 AGENT_LEVEL_OPTIONS = (
-	('1', 'General Holder'),
-	('2', 'Holder'),
-	('3', 'General Agency'),
-	('4', 'Agency'),
+	(1, 'General Holder'),
+	(2, 'Holder'),
+	(3, 'General Agency'),
+	(4, 'Agency'),
 )
 
 MEMBER_STATUS_OPTIONS = (
-	('0', 'Suspended'),
-	('1', 'Active'),
-	('2', 'Fund Freezed')
+	(0, 'Suspended'),
+	(1, 'Active'),
+	(2, 'Fund Freezed')
 )
 
 MEMBER_APPLICATION_STATUS_OPTIONS = (
-	('0', 'Rejected'),
-	('1', 'Accepted'),
-	('2', 'Unhandled')
+	(0, 'Rejected'),
+	(1, 'Accepted'),
+	(2, 'Unhandled')
 )
 
 LEVEL_LOCK_OPTIONS = (
-	('0', 'Locked'),
-	('1', 'Unlocked')
+	(0, 'Locked'),
+	(1, 'Unlocked')
 )
 
 GENDER_OPTIONS = (

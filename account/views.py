@@ -1,83 +1,24 @@
 import django_filters
 from django.http import Http404
-from rest_framework import filters
 from django.shortcuts import render
 from rest_framework.response import Response
-from rest_framework import mixins, status, viewsets
+from rest_framework import filters, mixins, status, viewsets
 from account.filters import AgentFilter
 from account.models import Agent, Member, AgentApplication
 from account.serializers import AgentSerializer, AgentRetrieveSerializer, MemberSerializer, AgentApplicationSerializer
 from bank.models import Bank
+from tracker.mixins import LoggingMixin
 
 
 class AgentViewSet( mixins.RetrieveModelMixin, mixins.CreateModelMixin, 
                     mixins.ListModelMixin, mixins.UpdateModelMixin, 
-                    viewsets.GenericViewSet):
-    '''
-    @class AgentViewSet
-    @brief
-        Viewset for agent
-    '''
-    
+                    LoggingMixin, viewsets.GenericViewSet):
+
     model = Agent
     serializer_class = AgentSerializer
     queryset = Agent.objects.all()
     filter_class = AgentFilter
     filter_backends = (filters.OrderingFilter, filters.DjangoFilterBackend)
-    # filter_fields = ('username',
-    #                   'register_at',
-    #                   'status',
-    #                   'commission_settings',
-    #                   'default_return_settings',
-    #                   'level',
-    #                   'parent_agent',
-    #                   'promo_code',
-    #                   'gender',
-    #                   'real_name',
-    #                   'phone',
-    #                   'email',
-    #                   'wechat',
-    #                   'qq',
-    #                   'bank',
-    #                   'account')
-
-    # def list(self, request):
-    #     response = {}
-    #     queryset = Agent.objects.all()
-    #     serializer = AgentRetrieveSerializer(queryset, context={"request":request}, many=True)
-    #     response['status_code'] = status.HTTP_200_OK
-    #     response['data'] = serializer.data
-    #     return Response(response)
-
-    def retrieve(self, request, pk=None):
-        try:
-            queryset = Agent.objects.get(pk=pk)
-            serializer = AgentRetrieveSerializer(queryset)
-            response = {}
-            response['status_code'] = status.HTTP_200_OK
-            response['data'] = serializer.data
-            return Response(response)
-        except Agent.DoesNotExist:
-            raise Http404
-
-    def update(self, request, pk, format=None):
-        response = {}
-
-        try:
-            agent = Agent.objects.get(id=pk)
-            serializer = AgentSerializer(agent, data=request.data, context={'request': request}, partial=True)
-
-            if serializer.is_valid():
-                serializer.save()
-                response['status_code'] = status.HTTP_200_OK
-                response['data'] = serializer.data
-                return Response(response)
-
-            response['status_code'] = status.HTTP_400_BAD_REQUEST
-            response['error'] = serializer.errors
-            return Response(response)
-        except Agent.DoesNotExist:
-            raise Http404
 
 class AgentApplicationViewSet(mixins.RetrieveModelMixin, mixins.CreateModelMixin, 
                               mixins.ListModelMixin, mixins.UpdateModelMixin, 

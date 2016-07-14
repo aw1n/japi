@@ -18,6 +18,12 @@ class AgentRetrieveSerializer(serializers.ModelSerializer):
     class Meta:
         model = Agent
 
+class AgentParentSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Agent
+        fields = ('id', 'username', 'level')
+
 class AgentSerializer(serializers.ModelSerializer):
 
     def __init__(self, *args, **kwargs):
@@ -33,24 +39,43 @@ class AgentSerializer(serializers.ModelSerializer):
                 self.fields.pop(field)
 
     bank = BankSerializer(required=False)
+    level = serializers.IntegerField(required=True)
+    birthday = serializers.DateField(required=False)
+    # parent_agent = AgentParentSerializer(required=False)
     user = serializers.PrimaryKeyRelatedField(required=False,queryset=User.objects.all())
     commission_settings = serializers.PrimaryKeyRelatedField(required=False, allow_null=True, queryset=CommissionSettings.objects.all())
-    level = serializers.IntegerField(required=True)
     parent_agent = serializers.PrimaryKeyRelatedField(required=False, allow_null=True, queryset=Agent.objects.all())
 
     class Meta:
         model = Agent
-
+        fields = ('user',
+                  'username', 
+                  'real_name', 
+                  'birthday', 
+                  'gender', 
+                  'phone', 
+                  'email', 
+                  'wechat', 
+                  'qq', 
+                  'promo_code', 
+                  'memo',
+                  'parent_agent', 
+                  'status', 
+                  'register_at', 
+                  'bank', 
+                  'default_member_lv', 
+                  'default_return_settings', 
+                  'commission_settings', 
+                  'level')
 
     def create(self, validated_data):
         bank_data = validated_data.pop('bank')
-
         user = User.objects.create(username=validated_data['username'])
         user.save()
         validated_data['user'] = user
+        print "trace1"
 
         if 'id' in bank_data:
-            #update bank info
             try:
                 bank_info = Bank.objects.get(pk=bank_data['id'])
                 bank_info.account = bank_data['account']
@@ -64,9 +89,36 @@ class AgentSerializer(serializers.ModelSerializer):
             b = Bank.objects.create(**bank_data)
             validated_data['bank'] = b
 
-
         agent = Agent.objects.create(**validated_data)
         return agent
+
+    def update(self, instance, validated_data):
+        bank_data = validated_data.pop('bank')
+        bank = instance.bank
+
+        if 'id' in bank_data:
+            try:
+                if bank.id == bank_data['id']:
+                    bank_info = Bank.objects.get(pk=bank.id)
+                    bank.bank_name = bank_data.get('bank_name',bank.bank_name)
+                    bank.province = bank_data.get('province',bank.province)
+                    bank.city = bank_data.get('city',bank.city)
+                    bank.account = bank_data.get('account',bank.account)
+                    bank.memo = bank_data.get('memo',bank.memo)
+                    bank.save()
+                else:
+                    raise serializers.ValidationError({"detail": "The Bank ID(%s) provided does not belong to this agent." % bank_data['id']})
+            except Bank.DoesNotExist:
+                #initial data
+                b = Bank.objects.create(**bank_data)
+                instance.bank = b
+        else:
+            b = Bank.objects.create(**bank_data)
+            instance.bank = b
+
+        instance.real_name = validated_data.get('real_name', instance.real_name)
+        instance.save()
+        return instance
 
 
     def validate(self, data):
@@ -86,8 +138,6 @@ class AgentSerializer(serializers.ModelSerializer):
                     raise serializers.ValidationError({"detail": "Parent ID is required."})
                 else:
                     p_agent = Agent.objects.get(pk=data['parent_agent'].id)
-                    print int(p_agent.level)
-                    print data['level'] + 1
                     if int(p_agent.level) >= data['level']:
                         raise serializers.ValidationError({"detail": "You(%s) are only allowed to create a level %s agent" % (p_agent.level,data['level'])})
             #     p_agent = Agent.objects.get(pk=data['parent_agent'].id)

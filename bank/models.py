@@ -2,11 +2,6 @@ from __future__ import unicode_literals
 
 from django.db import models
 
-STATUS_OPTIONS = (
-    ('0', 'Inactive'),
-    ('1', 'Active')
-)
-
 class Bank(models.Model):
 	'''
 	@class Bank

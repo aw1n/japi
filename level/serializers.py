@@ -39,7 +39,7 @@ class LevelSerializer(serializers.ModelSerializer):
     reg_present = serializers.CharField(required=False, max_length=100, allow_null=True)
     remit_check = serializers.CharField(max_length=100, allow_null=True)
     service_rate = serializers.IntegerField()
-    memo = serializers.CharField(required=False)
+    memo = serializers.CharField(required=False, allow_blank=True)
     status = serializers.IntegerField(default=1, allow_null=True)
     cdt_deposit_num = serializers.IntegerField(required=False, allow_null=True)
     cdt_deposit_amount = serializers.IntegerField(required=False, allow_null=True)

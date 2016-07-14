@@ -42,6 +42,9 @@ INSTALLED_APPS = [
     'level',
     'bank',
     'configsettings',
+    'provider',
+    'gametype',
+    'tracker',
     'corsheaders'
 ]
 
