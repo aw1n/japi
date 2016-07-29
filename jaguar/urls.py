@@ -42,6 +42,9 @@ router.register(r'provider', provider.ProviderViewSet, base_name='provider')
 router.register(r'commissionsetting', settings.CommissionSettingsViewSet, base_name='commissionsettings')
 router.register(r'tracker', tracker.LoggingViewSet, base_name='tracker')
 router.register(r'remitinfo', transactions.RemitInfoViewSet, base_name='remitinfo')
+router.register(r'transaction', transactions.TransactionViewSet, base_name='transaction')
+router.register(r'paymenttype', transactions.PaymentTypeViewSet, base_name='paymenttype')
+router.register(r'onlinepayee', transactions.OnlinePayeeViewSet, base_name='paymenttype')
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),

@@ -5,7 +5,6 @@ from rest_framework import serializers
 from django.db import IntegrityError
 from rest_framework.parsers import JSONParser
 from account.models import (Agent, Member, AgentLevel)
-from jaguar.lib.validators import RequiredFieldValidator
 from bank.models import Bank, BankInfo
 from bank.serializers import BankSerializer, BankInfoSerializer
 from level.serializers import SimpleLevelSerializer
@@ -13,6 +12,22 @@ from level.models import Level
 from configsettings.serializers import CommissionSettingsSerializer
 from configsettings.models import CommissionSettings, ReturnSettings
 from jaguar.lib.optionfieldsfilter import OptionFieldsFilter
+from jaguar.lib.validators import RequiredFieldValidator
+
+
+class BankValidator(object):
+
+    @staticmethod
+    def validate(data):
+        if data.get('id'):
+            b = BankInfo.objects.get(pk=data['id'])
+            for key, val in data.items():
+                setattr(b, key, data[key])
+            b.save()
+        else:
+            b = BankInfo.objects.create(**data)
+        return b
+
 
 class AgentLevelSerializer(serializers.ModelSerializer):
     class Meta:
@@ -34,8 +49,7 @@ class AgentSerializer(OptionFieldsFilter, serializers.ModelSerializer):
     def create(self, validated_data):
         bank_data = validated_data.pop('bank', None)
         if bank_data:
-            b = BankInfo.objects.create(**bank_data)
-            validated_data['bank'] = b
+            validated_data['bank'] = BankValidator.validate(bank_data)
 
         agent = Agent.objects.create(**validated_data)
         if agent:
@@ -48,10 +62,7 @@ class AgentSerializer(OptionFieldsFilter, serializers.ModelSerializer):
         
         bank_data = validated_data.pop('bank', None)
         if bank_data:
-            bank = instance.bank
-            for key, val in bank_data.items():
-                setattr(bank, key, bank_data[key])
-            bank.save()
+            BankValidator.validate(bank_data)
 
         for key, val in validated_data.items():
             setattr(instance, key, validated_data[key])
@@ -154,14 +165,7 @@ class MemberSerializer(OptionFieldsFilter, serializers.ModelSerializer):
         bank_data = validated_data.pop('bank', None)
 
         if bank_data:
-            if bank_data.get('id'):
-                b = BankInfo.objects.get(pk=bank_data['id'])
-                for key, val in bank_data.items():
-                    setattr(b, key, bank_data[key])
-                b.save()
-            else:
-                b = BankInfo.objects.create(**bank_data)
-            validated_data['bank'] = b
+            validated_data['bank'] = BankValidator.validate(bank_data)
 
         member = Member.objects.create(**validated_data)
         if member:
@@ -174,10 +178,7 @@ class MemberSerializer(OptionFieldsFilter, serializers.ModelSerializer):
         
         bank_data = validated_data.pop('bank', None)
         if bank_data:
-            bank = instance.bank
-            for key, val in bank_data.items():
-                setattr(bank, key, bank_data[key])
-            bank.save()
+            BankValidator.validate(bank_data)
 
         for key, val in validated_data.items():
             setattr(instance, key, validated_data[key])
