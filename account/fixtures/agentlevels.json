@@ -1,0 +1,34 @@
+[
+    {
+        "model": "account.agentlevel",
+        "pk": 1,
+        "fields": {
+            "name": "大股东",
+            "level": "1"
+        }
+    },
+    {
+        "model": "account.agentlevel",
+        "pk": 2,
+        "fields": {
+            "name": "股东",
+            "level": "2"
+        }
+    },
+    {
+        "model": "account.agentlevel",
+        "pk": 3,
+        "fields": {
+            "name": "总代理",
+            "level": "3"
+        }
+    },
+    {
+        "model": "account.agentlevel",
+        "pk": 4,
+        "fields": {
+            "name": "代理",
+            "level": "4"
+        }
+    }
+]

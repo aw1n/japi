@@ -76,34 +76,18 @@ class LevelViewSet(mixins.RetrieveModelMixin,
         try:
             levels = Level.objects.all()
 
-            pks = list()
-            # parameter ids is given
-            if request.GET.get('ids'):
-                pks = [model_id for model_id in request.GET.get('ids').split(',')]
-            # parameter id is given
-            if request.GET.get('id'):
-                pks.append(request.GET.get('id'))
-            # if id/ or ids are given
-            if pks:
-                levels = levels.filter(pk__in=pks)
-
-            if request.GET.get('status'):
-                levels = levels.filter(status=request.GET.get('status'))
-            if request.GET.get('name'):
-                levels = levels.filter(name=request.GET.get('name'))
-            serializer = LevelSerializer(levels.annotate(member_count=Count('member_level', distinct=True)),
+            levels = self.filter_queryset(levels.annotate(member_count=Count('member_level', distinct=True)))
+            paginated_level = self.paginate_queryset(levels)
+            serializer = LevelSerializer(paginated_level,
                                             context={'request': request},
                                             many=True)
 
-            start_idx, max_idx = self.__get_query_index(
-                                                    request.GET.get('start'),
-                                                    request.GET.get('max'))
-            # Format data to display.
             to_display = list()
             for serialized_lvl in serializer.data:
                 to_display.append(self.__convert_data_to_display(serialized_lvl))
-            
-            return Response(to_display[start_idx:max_idx], status=status.HTTP_200_OK)
+
+            # return Response(to_display[start_idx:max_idx], status=status.HTTP_200_OK)
+            return Response(to_display, status=status.HTTP_200_OK)
         except Exception as err:
             print(err)
             raise Http404
@@ -123,7 +107,7 @@ class LevelViewSet(mixins.RetrieveModelMixin,
 
             # Format data to display.
             to_display = self.__convert_data_to_display(serializer.data)
-            
+
             return Response(to_display, status=status.HTTP_200_OK)
         except Exception as err:
             raise Http404
@@ -161,11 +145,11 @@ class LevelViewSet(mixins.RetrieveModelMixin,
 
             # Format data to display.
             to_display = self.__convert_data_to_display(serializer.data)
-            
+
             return Response(to_display, status=status.HTTP_201_CREATED)
             # return Response(serializer.data, status=status.HTTP_201_CREATED)
         except Exception as err:
-            response['error'] = err
+            response['error'] = str(err)
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
     def update(self, request, pk):
@@ -204,7 +188,7 @@ class LevelViewSet(mixins.RetrieveModelMixin,
 
             return Response(to_display, status=status.HTTP_200_OK)
         except Exception as err:
-            response['error'] = err
+            response['error'] = str(err)
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -218,18 +202,29 @@ class LevelViewSet(mixins.RetrieveModelMixin,
         # clear the relationship for the level discount instance
         lv_discount_inst.clear()
         # process new relationships
+
         for discount in discount_details:
+            # check if every field exists
+            vailded = [(key in discount and discount.get(key) != '' ) for key in ['rate', 'check_rate', 'threshold']]
+
+            if False in vailded:
+                continue
+
             # check if discout had id
             if not discount.get('id'):
+
                 # create discount
                 discount_inst = lv_discount_inst.create(**discount)
                 discount_inst.save()
                 continue
+
             # update existing discount
             to_update = Discount.objects.get(pk=discount.get('id'))
+
             for key, value in discount.iteritems():
                 setattr(to_update, key, value)
             to_update.save()
+
             # add to level
             lv_discount_inst.add(to_update)
         return

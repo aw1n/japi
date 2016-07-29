@@ -1,0 +1,242 @@
+[
+    {
+        "model": "bank.bank",
+        "pk": 1,
+        "fields": {
+            "name": "工商银行",
+            "rank": 1
+        }
+    },
+    {
+        "model": "bank.bank",
+        "pk": 2,
+        "fields": {
+            "name": "农业银行",
+            "rank": 2
+        }
+    },
+    {
+        "model": "bank.bank",
+        "pk": 3,
+        "fields": {
+            "name": "交通银行",
+            "rank": 3
+        }
+    },
+    {
+        "model": "bank.bank",
+        "pk": 4,
+        "fields": {
+            "name": "建设银行",
+            "rank": 4
+        }
+    },
+    {
+        "model": "bank.bank",
+        "pk": 5,
+        "fields": {
+            "name": "招商银行",
+            "rank": 5
+        }
+    },
+    {
+        "model": "bank.bank",
+        "pk": 6,
+        "fields": {
+            "name": "光大银行",
+            "rank": 6
+        }
+    },
+    {
+        "model": "bank.bank",
+        "pk": 7,
+        "fields": {
+            "name": "广东发展银行",
+            "rank": 7
+        }
+    },
+    {
+        "model": "bank.bank",
+        "pk": 8,
+        "fields": {
+            "name": "中国邮政",
+            "rank": 8
+        }
+    },
+    {
+        "model": "bank.bank",
+        "pk": 9,
+        "fields": {
+            "name": "民生银行",
+            "rank": 9
+        }
+    },
+    {
+        "model": "bank.bank",
+        "pk": 10,
+        "fields": {
+            "name": "上海浦东发展银行",
+            "rank": 10
+        }
+    },
+    {
+        "model": "bank.bank",
+        "pk": 11,
+        "fields": {
+            "name": "中国银行",
+            "rank": 11
+        }
+    },
+    {
+        "model": "bank.bank",
+        "pk": 12,
+        "fields": {
+            "name": "平安银行",
+            "rank": 12
+        }
+    },
+    {
+        "model": "bank.bank",
+        "pk": 13,
+        "fields": {
+            "name": "兴业银行",
+            "rank": 13
+        }
+    },
+    {
+        "model": "bank.bank",
+        "pk": 14,
+        "fields": {
+            "name": "中信银行",
+            "rank": 14
+        }
+    },
+    {
+        "model": "bank.bank",
+        "pk": 15,
+        "fields": {
+            "name": "北京银行",
+            "rank": 15
+        }
+    },
+    {
+        "model": "bank.bank",
+        "pk": 16,
+        "fields": {
+            "name": "上海银行",
+            "rank": 16
+        }
+    },
+    {
+        "model": "bank.bank",
+        "pk": 17,
+        "fields": {
+            "name": "华夏银行",
+            "rank": 17
+        }
+    },
+    {
+        "model": "bank.bank",
+        "pk": 18,
+        "fields": {
+            "name": "深圳发展银行",
+            "rank": 18
+        }
+    },
+    {
+        "model": "bank.bank",
+        "pk": 19,
+        "fields": {
+            "name": "渤海银行",
+            "rank": 19
+        }
+    },
+    {
+        "model": "bank.bank",
+        "pk": 20,
+        "fields": {
+            "name": "广州银行",
+            "rank": 20
+        }
+    },
+    {
+        "model": "bank.bank",
+        "pk": 21,
+        "fields": {
+            "name": "杭州银行",
+            "rank": 21
+        }
+    },
+    {
+        "model": "bank.bank",
+        "pk": 22,
+        "fields": {
+            "name": "浙商银行",
+            "rank": 22
+        }
+    },
+    {
+        "model": "bank.bank",
+        "pk": 23,
+        "fields": {
+            "name": "宁波银行",
+            "rank": 23
+        }
+    },
+    {
+        "model": "bank.bank",
+        "pk": 24,
+        "fields": {
+            "name": "温州银行",
+            "rank": 24
+        }
+    },
+    {
+        "model": "bank.bank",
+        "pk": 25,
+        "fields": {
+            "name": "普商银行",
+            "rank": 25
+        }
+    },
+    {
+        "model": "bank.bank",
+        "pk": 26,
+        "fields": {
+            "name": "南京银行",
+            "rank": 26
+        }
+    },
+    {
+        "model": "bank.bank",
+        "pk": 27,
+        "fields": {
+            "name": "北京农商银行",
+            "rank": 27
+        }
+    },
+    {
+        "model": "bank.bank",
+        "pk": 28,
+        "fields": {
+            "name": "顺德农商银行",
+            "rank": 28
+        }
+    },
+    {
+        "model": "bank.bank",
+        "pk": 29,
+        "fields": {
+            "name": "珠海市农村信用联社",
+            "rank": 29
+        }
+    },
+    {
+        "model": "bank.bank",
+        "pk": 30,
+        "fields": {
+            "name": "其他",
+            "rank": 100
+        }
+    }
+]

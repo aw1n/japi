@@ -1,0 +1,43 @@
+[   
+    {
+        "model": "level.level",
+        "pk": 1,
+        "fields":{
+            "online_discounts": [{
+                "type": 2
+            }],
+            "name": "",
+            "remit_limit": {
+                "lower": "",
+                "upper": ""
+            },
+            "online_limit": {
+                "lower": "",
+                "upper": ""
+            },
+            "withdraw_limit": {
+                "lower": "",
+                "upper": ""
+            },
+            "withdraw_fee": {
+                "value": "",
+                "type": "",
+                "hour": "",
+                "times": ""
+            },
+            "memo": "",
+            "service_rate": "",
+            "reg_present": {
+                "status": "",
+                "allow_add": "",
+                "amount": "",
+                "check_amount": ""
+            },
+            "remit_check": {
+                "company": "",
+                "online": "",
+                "card": ""
+            }
+        }
+    }
+]

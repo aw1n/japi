@@ -1,0 +1,38 @@
+[
+    {
+        "model": "gametype.gametype",
+        "pk": 1,
+        "fields": {
+            "name": "真人",
+            "status": 1,
+            "provider": 1
+        }
+    },
+    {
+        "model": "gametype.gametype",
+        "pk": 2,
+        "fields": {
+            "name": "视讯",
+            "status": 1,
+            "provider": 1
+        }
+    },
+    {
+        "model": "gametype.gametype",
+        "pk": 3,
+        "fields": {
+            "name": "HTML5",
+            "status": 1,
+            "provider": 2
+        }
+    },
+    {
+        "model": "gametype.gametype",
+        "pk": 4,
+        "fields": {
+            "name": "百练赛",
+            "status": 1,
+            "provider": 2
+        }
+    }
+]

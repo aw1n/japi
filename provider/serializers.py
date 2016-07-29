@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from provider.models import Provider
+from gametype.models import GameType
+from gametype.serializers import GameTypeSerializer
 
 
 class ProviderSerializer(serializers.ModelSerializer):
@@ -24,10 +26,11 @@ class ProviderSerializer(serializers.ModelSerializer):
                 for field in default - to_show:
                     self.fields.pop(field)
 
-
+    provider = serializers.IntegerField(source='id')
     name = serializers.CharField(max_length=255)
     status = serializers.IntegerField(default=1)
+    gametypes = GameTypeSerializer(many=True)
 
     class Meta:
         model = Provider
-        fields = ('name', 'status')
+        fields = ('provider', 'name', 'status', 'gametypes')

@@ -35,5 +35,9 @@ class Level(models.Model):
     cdt_withdraw_num = models.IntegerField(blank=True, null=True)
     cdt_withdraw_amount = models.IntegerField(blank=True, null=True)
 
+
     class Meta:
         db_table = "level_level"
+
+    def __unicode__(self):
+        return self.name

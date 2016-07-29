@@ -1,271 +1,288 @@
 import datetime
+from ipware.ip import get_ip
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from django.db import IntegrityError
 from rest_framework.parsers import JSONParser
-from account.models import (Agent, Member, AgentApplication)
-from bank.models import Bank
-from bank.serializers import BankSerializer
+from account.models import (Agent, Member, AgentLevel)
+from jaguar.lib.validators import RequiredFieldValidator
+from bank.models import Bank, BankInfo
+from bank.serializers import BankSerializer, BankInfoSerializer
+from level.serializers import SimpleLevelSerializer
 from level.models import Level
 from configsettings.serializers import CommissionSettingsSerializer
 from configsettings.models import CommissionSettings, ReturnSettings
+from jaguar.lib.optionfieldsfilter import OptionFieldsFilter
 
-class AgentRetrieveSerializer(serializers.ModelSerializer):
-
-    bank = BankSerializer(required=False)
-    commission_settings = CommissionSettingsSerializer(required=False)
-
+class AgentLevelSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Agent
+        model = AgentLevel
 
-class AgentParentSerializer(serializers.ModelSerializer):
-    
-    class Meta:
-        model = Agent
-        fields = ('id', 'username', 'level')
 
-class AgentSerializer(serializers.ModelSerializer):
-
-    def __init__(self, *args, **kwargs):
-
-        super(AgentSerializer, self).__init__(*args, **kwargs)
-        opt_fields = self.context['request'].query_params.get('opt_fields')
-        if opt_fields:
-            opt_fields = opt_fields.split(',')
-            # Remove not specified fields
-            to_show = set(opt_fields)
-            default = set(self.fields.keys())
-            for field in default - to_show:
-                self.fields.pop(field)
-
-    bank = BankSerializer(required=False)
-    level = serializers.IntegerField(required=True)
-    birthday = serializers.DateField(required=False)
-    # parent_agent = AgentParentSerializer(required=False)
-    user = serializers.PrimaryKeyRelatedField(required=False,queryset=User.objects.all())
-    commission_settings = serializers.PrimaryKeyRelatedField(required=False, allow_null=True, queryset=CommissionSettings.objects.all())
+class AgentSerializer(OptionFieldsFilter, serializers.ModelSerializer):
+    bank = BankInfoSerializer(required=False)
+    user = serializers.PrimaryKeyRelatedField(required=False, queryset=User.objects.all())
+    level = serializers.PrimaryKeyRelatedField(required=False, allow_null=True, queryset=AgentLevel.objects.all())
     parent_agent = serializers.PrimaryKeyRelatedField(required=False, allow_null=True, queryset=Agent.objects.all())
+    default_member_lv = serializers.PrimaryKeyRelatedField(required=False, queryset=Level.objects.all())
+    default_return_settings = serializers.PrimaryKeyRelatedField(required=False, allow_null=True, queryset=ReturnSettings.objects.all())
+    commission_settings = serializers.PrimaryKeyRelatedField(required=False, allow_null=True, queryset=CommissionSettings.objects.all())
 
     class Meta:
         model = Agent
-        fields = ('user',
-                  'username', 
-                  'real_name', 
-                  'birthday', 
-                  'gender', 
-                  'phone', 
-                  'email', 
-                  'wechat', 
-                  'qq', 
-                  'promo_code', 
-                  'memo',
-                  'parent_agent', 
-                  'status', 
-                  'register_at', 
-                  'bank', 
-                  'default_member_lv', 
-                  'default_return_settings', 
-                  'commission_settings', 
-                  'level')
 
     def create(self, validated_data):
-        bank_data = validated_data.pop('bank')
-        user = User.objects.create(username=validated_data['username'])
-        user.save()
-        validated_data['user'] = user
-        print "trace1"
-
-        if 'id' in bank_data:
-            try:
-                bank_info = Bank.objects.get(pk=bank_data['id'])
-                bank_info.account = bank_data['account']
-                bank_info.save()
-                validated_data['bank'] = bank_info
-            except Bank.DoesNotExist:
-                #initial data
-                b = Bank.objects.create(**bank_data)
-                validated_data['bank'] = b
-        else:
-            b = Bank.objects.create(**bank_data)
+        bank_data = validated_data.pop('bank', None)
+        if bank_data:
+            b = BankInfo.objects.create(**bank_data)
             validated_data['bank'] = b
 
         agent = Agent.objects.create(**validated_data)
+        if agent:
+            user = User.objects.create(username=validated_data['username'])
+            agent.user = user
         return agent
 
     def update(self, instance, validated_data):
-        bank_data = validated_data.pop('bank')
-        bank = instance.bank
+        validated_data.pop('username', None)
+        
+        bank_data = validated_data.pop('bank', None)
+        if bank_data:
+            bank = instance.bank
+            for key, val in bank_data.items():
+                setattr(bank, key, bank_data[key])
+            bank.save()
 
-        if 'id' in bank_data:
-            try:
-                if bank.id == bank_data['id']:
-                    bank_info = Bank.objects.get(pk=bank.id)
-                    bank.bank_name = bank_data.get('bank_name',bank.bank_name)
-                    bank.province = bank_data.get('province',bank.province)
-                    bank.city = bank_data.get('city',bank.city)
-                    bank.account = bank_data.get('account',bank.account)
-                    bank.memo = bank_data.get('memo',bank.memo)
-                    bank.save()
-                else:
-                    raise serializers.ValidationError({"detail": "The Bank ID(%s) provided does not belong to this agent." % bank_data['id']})
-            except Bank.DoesNotExist:
-                #initial data
-                b = Bank.objects.create(**bank_data)
-                instance.bank = b
-        else:
-            b = Bank.objects.create(**bank_data)
-            instance.bank = b
-
-        instance.real_name = validated_data.get('real_name', instance.real_name)
+        for key, val in validated_data.items():
+            setattr(instance, key, validated_data[key])
         instance.save()
-        return instance
 
+        return instance
 
     def validate(self, data):
         request = self.context['request']
 
         if request.method == 'POST':
-            if 'username' in data:
+            if data.get('username'):
                 if Agent.objects.filter(username=data['username']).count():
-                    raise serializers.ValidationError({"detail": "Username already exists"})
+                    raise serializers.ValidationError({'detail': 'Username already exists'})
 
-            if data['level'] == 1:
-                if data['parent_agent']:
-                    raise serializers.ValidationError({"detail": "Parent agent is not needed in creating Level 1 Agent."})
+            agent_level = data['level']
+            if agent_level.id == 1:
+                if 'parent_agent' in data and data['parent_agent']:
+                    raise serializers.ValidationError({'detail': 'Parent agent is not needed in creating Level 1 Agent.'})
 
-            if data['level'] != 1:
+            if agent_level.id != 1:
                 if data['parent_agent'] == None:
-                    raise serializers.ValidationError({"detail": "Parent ID is required."})
+                    raise serializers.ValidationError({'detail': 'Parent ID is required.'})
                 else:
                     p_agent = Agent.objects.get(pk=data['parent_agent'].id)
-                    if int(p_agent.level) >= data['level']:
-                        raise serializers.ValidationError({"detail": "You(%s) are only allowed to create a level %s agent" % (p_agent.level,data['level'])})
-            #     p_agent = Agent.objects.get(pk=data['parent_agent'].id)
-            #     if int(data['level']) <= int(p_agent.level):
-            #         raise serializers.ValidationError({"detail": "You(%s) are only allowed to create a level %s agent" % (p_agent.level,data['level'])})
+                    if int(p_agent.level.id) >= data['level']:
+                        raise serializers.ValidationError({'detail': 'You({0}) are only allowed to create a level {1} agent'.format(p_agent.level, data.get('level'))})
             
         return data
 
-class AgentApplicationSerializer(serializers.ModelSerializer):
-    '''
-    @class AgentApplicationSerializer
-    @brief
-        Serializer for Agent Application
-    '''
+    def to_representation(self, instance):
+        request = self.context['request']
+        ret = super(AgentSerializer, self).to_representation(instance)
 
-    def __init__(self, *args, **kwargs):
-        '''
-        '''
+        #remove other fields that are not needed in the response
+        ret.pop('user', None)
+        ret.pop('created_at', None)
+        ret.pop('updated_at', None)
+        ret.pop('updated_by', None)
+        ret.pop('referring_url', None)
+        ret.pop('initiated_by', None)
 
-        super(AgentApplicationSerializer, self).__init__(*args, **kwargs)
-        opt_fields = self.context['request'].query_params.get('opt_fields')
-        if opt_fields:
-            opt_fields = opt_fields.split(',')
-            # Remove not specified fields
-            to_show = set(opt_fields)
-            default = set(self.fields.keys())
-            for field in default - to_show:
-                self.fields.pop(field)
+        # if opt_expand if provided(whatever value) we need to display more detail of some fields
+        if request.GET.get('opt_expand'):
+            if instance.level:
+                ret['level'] = {
+                    'id': instance.level.id, 
+                    'name': instance.level.name
+                }
+
+            if instance.default_member_lv:
+                ret['default_member_lv'] = {
+                    'id': instance.default_member_lv.id, 
+                    'name': instance.default_member_lv.name
+                }
+
+            if instance.parent_agent:
+                ret['parent_agent'] = {
+                    'id': instance.parent_agent.id, 
+                    'name': instance.parent_agent.username
+                }
+                
+            if instance.commission_settings:
+                ret['commission_settings'] = {
+                    'id': instance.commission_settings.id, 
+                    'name': instance.commission_settings.name
+                }
+
+            if instance.default_return_settings:
+                ret['default_return_settings'] = {
+                    'id': instance.default_return_settings.id, 
+                    'name': instance.default_return_settings.name
+                }
+
+        return ret
 
 
-    username = serializers.CharField(max_length=100, required=True)
-    active_account = serializers.PrimaryKeyRelatedField(required=False, queryset=Agent.objects.all())
-    account = serializers.CharField(max_length=100, required=False)
-    name = serializers.CharField(max_length=100, required=False)
-    phone = serializers.CharField(max_length=50, required=False)
-    email = serializers.EmailField(required=False)
-    ip = serializers.CharField(max_length=100, required=True)
-    status = serializers.IntegerField(required=False, default=1)
-
+class AgentApplicationSerializer(AgentSerializer):
     class Meta:
-        model = AgentApplication
-        # fields = ('username','active_account','account','name','phone','email','ip','status','confirm_at')
+        model = Agent
 
-    def validate(self, data):
+    def validate(self,data):
         request = self.context['request']
 
         if request.method == 'POST':
-            if 'username' in data:
-                if AgentApplication.objects.filter(username=data['username']).count():
-                    raise serializers.ValidationError({"detail": "Username already exists."})
+            data['status'] = 3
+            RequiredFieldValidator.validate(data, ('username', 'phone', 'email', 'qq', 'bank'))
         return data
 
 
-
-class MemberSerializer(serializers.ModelSerializer):
-    '''
-    @class MemberSerializer
-    @brief
-        Serializer for Member
-    '''
-    
-    def __init__(self, *args, **kwargs):
-        '''
-        '''
-
-        super(MemberSerializer, self).__init__(*args, **kwargs)
-        opt_fields = self.context['request'].query_params.get('opt_fields')
-        if opt_fields:
-            opt_fields = opt_fields.split(',')
-            # Remove not specified fields
-            to_show = set(opt_fields)
-            default = set(self.fields.keys())
-            for field in default - to_show:
-                self.fields.pop(field)
-
-    bank = BankSerializer(required=False)
+class MemberSerializer(OptionFieldsFilter, serializers.ModelSerializer):
+    bank = BankInfoSerializer(required=False)
     user = serializers.PrimaryKeyRelatedField(required=False,queryset=User.objects.all())
-    # username = serializers.CharField(required=False, max_length=100)
-    # real_name = serializers.CharField(max_length=100, required=False)
-    # phone = serializers.CharField(max_length=50, required=False)
-    # gender = serializers.CharField(max_length=1,required=False)
-    # email = serializers.EmailField(required=False)
-    # birthday = serializers.DateField(required=False)
-    # wechat = serializers.CharField(max_length=255, required=False)
-    # qq = serializers.CharField(max_length=255, required=False)
-    # memo = serializers.CharField(required=False)
-    # level = serializers.IntegerField(required=False)
-    # status = serializers.IntegerField(required=False, default=1)
-    # return_settings = serializers.PrimaryKeyRelatedField(required=False,queryset=ReturnSettings.objects.all())
-    # level_lock = serializers.IntegerField(required=False)
-    # banking_info = serializers.PrimaryKeyRelatedField(required=False,queryset=Bank.objects.all()) 
-    # agent = serializers.PrimaryKeyRelatedField(required=False,queryset=Agent.objects.all())   
+    agent = serializers.PrimaryKeyRelatedField(required=False,queryset=Agent.objects.all())
 
     class Meta:
         model = Member
 
-
     def create(self, validated_data):
-        bank_data = validated_data.pop('bank')
+        bank_data = validated_data.pop('bank', None)
 
-        user = User.objects.create(username=validated_data['username'])
-        user.save()
-        validated_data['user'] = user
-
-        if 'id' in bank_data:
-            #update bank info
-            try:
-                bank_info = Bank.objects.get(pk=bank_data['id'])
-                bank_info.account = bank_data['account']
-                bank_info.save()
-                validated_data['bank'] = bank_info
-            except Bank.DoesNotExist:
-                #initial data
-                b = Bank.objects.create(**bank_data)
-                validated_data['bank'] = b
-        else:
-            b = Bank.objects.create(**bank_data)
+        if bank_data:
+            if bank_data.get('id'):
+                b = BankInfo.objects.get(pk=bank_data['id'])
+                for key, val in bank_data.items():
+                    setattr(b, key, bank_data[key])
+                b.save()
+            else:
+                b = BankInfo.objects.create(**bank_data)
             validated_data['bank'] = b
 
-
         member = Member.objects.create(**validated_data)
+        if member:
+            user = User.objects.create(username=validated_data['username'])
+            member.user = user
         return member
+
+    def update(self, instance, validated_data):
+        validated_data.pop('username', None)
+        
+        bank_data = validated_data.pop('bank', None)
+        if bank_data:
+            bank = instance.bank
+            for key, val in bank_data.items():
+                setattr(bank, key, bank_data[key])
+            bank.save()
+
+        for key, val in validated_data.items():
+            setattr(instance, key, validated_data[key])
+        instance.save()
+
+        return instance
 
     def validate(self, data):
         request = self.context['request']
-
         if request.method == 'POST':
             if 'username' in data:
                 if Agent.objects.filter(username=data['username']).count():
-                    raise serializers.ValidationError({"detail": "Username already exists"})
+                    raise serializers.ValidationError({'detail': 'Username already exists'})
+
+            parent_agent = data.get('agent')
+            if parent_agent:
+                try:
+                    data['level'] = parent_agent.default_member_lv
+                except IntegrityError, e:
+                    raise serializers.ValidationError({'detail': '{0}'.format(e)})
+
+                try:
+                    data['return_settings'] = parent_agent.default_return_settings
+                except IntegrityError, e:
+                    raise serializers.ValidationError({'detail': '{0}'.format(e)})
+
+            else:
+                raise serializers.ValidationError({'detail': 'Parent Agent is required.'})
         return data
+
+    def to_representation(self, instance):
+        request = self.context['request']
+        ret = super(MemberSerializer, self).to_representation(instance)
+
+        #remove other fields that are not needed in the response
+        ret.pop('user', None)
+        ret.pop('created_at', None)
+        ret.pop('updated_at', None)
+        ret.pop('updated_by', None)
+        ret.pop('referring_url', None)
+        ret.pop('initiated_by', None)
+
+        # if opt_expand if provided(whatever value) we need to display more detail of some fields
+        if request.GET.get('opt_expand'):
+            if instance.level:
+                ret['level'] = {
+                    'id': instance.level.id, 
+                    'name': instance.level.name
+                }
+
+            if instance.parent_agent:
+                ret['parent_agent'] = {
+                    'id': instance.parent_agent.id, 
+                    'name': instance.parent_agent.username
+                }
+                
+            if instance.commission_settings:
+                ret['commission_settings'] = {
+                    'id': instance.commission_settings.id, 
+                    'name': instance.commission_settings.name
+                }
+
+            if instance.default_return_settings:
+                ret['default_return_settings'] = {
+                    'id': instance.default_return_settings.id, 
+                    'name': instance.default_return_settings.name
+                }
+
+        return ret
+
+
+class MemberApplicationSerializer(MemberSerializer):
+    class Meta:
+        model = Member
+
+    def validate(self,data):
+        request = self.context['request']
+
+        if request.method == 'POST':
+            RequiredFieldValidator.validate(data, ('username', 'phone'))
+            data['status'] = 3
+        return data
+
+
+class MemberGuestSerializer(serializers.ModelSerializer):
+    # user = serializers.PrimaryKeyRelatedField(required=False,queryset=User.objects.all())
+
+    class Meta:
+        model = Member
+        fields = ('id', 'username', 'phone', 'status', 'level_lock', 'ip', 'ip', 'created_at', 'updated_at')
+
+    def create(self, validated_data):
+        request = self.context.get('request')
+        phone = validated_data.get('phone')
+
+        try:
+            validated_data['username'] = 'guest_{0}'.format(phone)
+            validated_data['ip'] = get_ip(request)
+            validated_data['status'] = 3 #pending
+            member = Member.objects.create(**validated_data)
+            if member:
+                user = User.objects.create(username=validated_data['username'])
+                member.user = user
+        except IntegrityError, e:
+            raise serializers.ValidationError({'detail': 'Phone number {0} already used. Please try another phone number.'.format(phone)})
+        except Exception, e:
+            raise serializers.ValidationError({'detail': '{0}'.format(e)})
+        return member

@@ -1,0 +1,18 @@
+[
+    {
+        "model": "provider.provider",
+        "pk": 1,
+        "fields": {
+            "name": "BBIN",
+            "status": 1
+        }
+    },
+    {
+        "model": "provider.provider",
+        "pk": 2,
+        "fields": {
+            "name": "SABA",
+            "status": 1
+        }
+    }
+]

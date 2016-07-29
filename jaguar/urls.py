@@ -20,20 +20,28 @@ from rest_framework import routers
 
 from account import views as account
 from level import views as level
+from bank import views as bank
 from configsettings import views as settings
 from tracker import views as tracker
+from provider import views as provider
+from transaction import views as transactions
 
 router = routers.DefaultRouter()
 router.register(r'agent', account.AgentViewSet, 'agent')
 router.register(r'agentapplication', account.AgentApplicationViewSet, 'agentapplication')
 router.register(r'member', account.MemberViewSet, 'member')
+router.register(r'memberapplication', account.MemberApplicationViewSet, 'memberapplication')
+router.register(r'guest/member', account.MemberGuestViewSet, 'memberguest')
 router.register(r'level', level.LevelViewSet, base_name='level')
+router.register(r'bank', bank.BankViewSet, base_name='bank')
+router.register(r'bankinfo', bank.BankInfoViewSet, base_name='bankinfo')
+router.register(r'agentlevel', account.AgentLevelViewSet, base_name='agentlevel')
 router.register(r'discount', settings.DiscountViewSet, base_name='discount')
-router.register(r'returnsettings', settings.ReturnSettingsViewSet, base_name='returnsettings')
-router.register(r'returnrateconfig', settings.ReturnRateConfigViewSet, base_name='returnrateconfig')
-router.register(r'commissionsettings', settings.CommissionSettingsViewSet, base_name='commissionsettings')
+router.register(r'returnsetting', settings.ReturnSettingsViewSet, base_name='returnsettings')
+router.register(r'provider', provider.ProviderViewSet, base_name='provider')
+router.register(r'commissionsetting', settings.CommissionSettingsViewSet, base_name='commissionsettings')
 router.register(r'tracker', tracker.LoggingViewSet, base_name='tracker')
-# router.register(r'memberapplication', account.MemberApplicationViewSet, 'memberapplication')
+router.register(r'remitinfo', transactions.RemitInfoViewSet, base_name='remitinfo')
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),

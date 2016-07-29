@@ -2,36 +2,30 @@ from rest_framework import serializers, renderers, parsers
 from level.models import Level
 from configsettings.models import Discount
 from configsettings.serializers import DiscountSerializer
+from jaguar.lib.optionfieldsfilter import OptionFieldsFilter
 
 import json
 import ast
 
+class SimpleLevelSerializer(serializers.ModelSerializer):
 
-class LevelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Level
+        fields = (
+            'id', 
+            'name',
+            )
+        
+class LevelSerializer(OptionFieldsFilter, serializers.ModelSerializer):
     '''
     @class LevelSerializer
     @brief
         Serializer class for Level
     '''
 
-    def __init__(self, *args, **kwargs):
-        '''
-        '''
-
-        super(LevelSerializer, self).__init__(*args, **kwargs)
-        if 'request' in self.context:
-            opt_fields = self.context['request'].query_params.get('opt_fields')
-            if opt_fields:
-                opt_fields = opt_fields.split(',')
-                # Remove not specified fields
-                to_show = set(opt_fields)
-                default = set(self.fields.keys())
-                for field in default - to_show:
-                    self.fields.pop(field)
-
     member_count = serializers.IntegerField(read_only=True)
     name = serializers.CharField(max_length=255)
-    remit_limit  = serializers.CharField(required=False, max_length=255, allow_null=True)
+    remit_limit = serializers.CharField(required=False, max_length=255, allow_null=True)
     online_limit = serializers.CharField(required=False, max_length=255, allow_null=True)
     withdraw_limit = serializers.CharField(required=False, max_length=255, allow_null=True)
     # withdraw_fee = serializers.FloatField()
@@ -69,7 +63,6 @@ class LevelSerializer(serializers.ModelSerializer):
                 'online_limit',
                 'withdraw_limit',
                 'withdraw_fee',
-                # 'withdraw_fee_way',
                 'reg_present',
                 'remit_check',
                 'service_rate',

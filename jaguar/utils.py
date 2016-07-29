@@ -9,8 +9,8 @@ def custom_exception_handler(exc, context):
     response = exception_handler(exc, context)
 
     # Now add the HTTP status code to the response.
-    if response is not None:
-        response.data['status_code'] = response.status_code
+    # if response is not None:
+    #     response.data['status_code'] = response.status_code
 
     return response
 
@@ -57,7 +57,7 @@ class ESPagination(pagination.LimitOffsetPagination):
             Overriden method of LimitOffsetPagination
             Get then return the paginated queryset
         '''
-        
+
         return Response(data)
 
     def __get_query_index(self):

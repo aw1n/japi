@@ -45,7 +45,9 @@ INSTALLED_APPS = [
     'provider',
     'gametype',
     'tracker',
-    'corsheaders'
+    'transaction',
+    'corsheaders',
+    'rest_framework.authtoken'
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -76,7 +78,7 @@ CORS_ALLOW_METHODS = (
 ROOT_URLCONF = 'jaguar.urls'
 
 REST_FRAMEWORK = {
-    'EXCEPTION_HANDLER': 'jaguar.utils.custom_exception_handler',
+    # 'EXCEPTION_HANDLER': 'jaguar.utils.custom_exception_handler',
     'DEFAULT_PAGINATION_CLASS': 'jaguar.utils.ESPagination',
     'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',)
 }

@@ -3,90 +3,73 @@ from django.http import Http404
 from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework import filters, mixins, status, viewsets
-from account.filters import AgentFilter
-from account.models import Agent, Member, AgentApplication
-from account.serializers import AgentSerializer, AgentRetrieveSerializer, MemberSerializer, AgentApplicationSerializer
+from account.filters import AgentFilter, MemberFilter
+from account.models import Agent, Member, AgentLevel
+from account.serializers import (AgentSerializer, MemberSerializer, 
+                                 AgentApplicationSerializer, MemberApplicationSerializer,
+                                 MemberGuestSerializer, AgentLevelSerializer)
 from bank.models import Bank
 from tracker.mixins import LoggingMixin
 
+class AgentLevelViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
-class AgentViewSet( mixins.RetrieveModelMixin, mixins.CreateModelMixin, 
-                    mixins.ListModelMixin, mixins.UpdateModelMixin, 
-                    LoggingMixin, viewsets.GenericViewSet):
+    model = AgentLevel
+    serializer_class = AgentLevelSerializer
+    queryset = AgentLevel.objects.all()
+
+
+class AgentViewSet(mixins.RetrieveModelMixin, mixins.CreateModelMixin, 
+                   mixins.ListModelMixin, mixins.UpdateModelMixin, 
+                   LoggingMixin, viewsets.GenericViewSet):
 
     model = Agent
-    serializer_class = AgentSerializer
     queryset = Agent.objects.all()
+    serializer_class = AgentSerializer
     filter_class = AgentFilter
     filter_backends = (filters.OrderingFilter, filters.DjangoFilterBackend)
+    lookup_fields = ('real_name', 'username')
+
 
 class AgentApplicationViewSet(mixins.RetrieveModelMixin, mixins.CreateModelMixin, 
-                              mixins.ListModelMixin, mixins.UpdateModelMixin, 
-                              viewsets.GenericViewSet):
-    '''
-    @class AgentApplicationViewSet
-    @brief
-        Viewset for agent application
-    '''
-    
-    model = AgentApplication
+                   mixins.ListModelMixin, mixins.UpdateModelMixin, 
+                   LoggingMixin, viewsets.GenericViewSet):
+
+    model = Agent
+    queryset = Agent.objects.all()
     serializer_class = AgentApplicationSerializer
-    queryset = AgentApplication.objects.all()
+    filter_class = AgentFilter
+    filter_backends = (filters.OrderingFilter, filters.DjangoFilterBackend)
+    lookup_fields = ('real_name', 'username')
 
-    def update(self, request, pk, format=None):
-        response = {}
 
-        try:
-            agent = AgentApplication.objects.get(id=pk)
-            serializer = AgentApplicationSerializer(agent, data=request.data, context={'request': request})
-
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-
-            response['error'] = serializer.errors
-            return Response(response, status=status.HTTP_400_BAD_REQUEST)
-        except AgentApplication.DoesNotExist:
-            return Response(response, status=status.HTTP_400_BAD_REQUEST)
-
-class MemberViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin, mixins.CreateModelMixin,
-                    mixins.UpdateModelMixin, viewsets.GenericViewSet):
-    '''
-    @class MemberViewSet
-    @brief
-        Viewset for member
-    '''
+class MemberViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin, 
+                    mixins.CreateModelMixin, mixins.UpdateModelMixin, 
+                    LoggingMixin, viewsets.GenericViewSet):
 
     model = Member
-    serializer_class = MemberSerializer
     queryset = Member.objects.all()
+    serializer_class = MemberSerializer
+    filter_class = MemberFilter
+    filter_backends = (filters.OrderingFilter, filters.DjangoFilterBackend)
 
-    # def retrieve(self, request, pk=None):
-    #     queryset = Member.objects.all()
-    #     member = get_object_or_404(queryset, pk=pk)
-    #     serializer = MemberSerializer(member)
-    #     return Response(serializer.data)
 
-    # def list(self, request):
-    #     response = {}
-    #     queryset = Member.objects.all()
-    #     serializer = MemberSerializer(queryset, context={"request":request}, many=True)
-    #     response['status_code'] = status.HTTP_200_OK
-    #     response['data'] = serializer.data
-    #     return Response(response)
+class MemberApplicationViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin, 
+                    mixins.CreateModelMixin, mixins.UpdateModelMixin, 
+                    LoggingMixin, viewsets.GenericViewSet):
 
-    def update(self, request, pk, format=None):
-        response = {}
+    model = Member
+    queryset = Member.objects.all()
+    serializer_class = MemberApplicationSerializer
+    filter_class = MemberFilter
+    filter_backends = (filters.OrderingFilter, filters.DjangoFilterBackend)
 
-        try:
-            member = Member.objects.get(id=pk)
-            serializer = MemberSerializer(member, data=request.data, context={'request': request})
 
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
+class MemberGuestViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin, 
+                    mixins.CreateModelMixin, mixins.UpdateModelMixin, 
+                    LoggingMixin, viewsets.GenericViewSet):
 
-            response['error'] = serializer.errors
-            return Response(response, status=status.HTTP_400_BAD_REQUEST)
-        except Member.DoesNotExist:
-            raise Http404
+    model = Member
+    queryset = Member.objects.all()
+    serializer_class = MemberGuestSerializer
+    filter_class = MemberFilter
+    filter_backends = (filters.OrderingFilter, filters.DjangoFilterBackend)
