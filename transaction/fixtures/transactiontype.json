@@ -1,0 +1,58 @@
+[
+    {
+        "model": "transaction.transactiontype",
+        "pk": 1,
+        "fields": {
+            "name": "Remit",
+            "code": "remit"
+        }
+    },
+    {
+        "model": "transaction.transactiontype",
+        "pk": 2,
+        "fields": {
+            "name": "Online Pay",
+            "code": "online_pay"
+        }
+    },
+    {
+        "model": "transaction.transactiontype",
+        "pk": 3,
+        "fields": {
+            "name": "Manual Operation",
+            "code": "manual_operation"
+        }
+    },
+    {
+        "model": "transaction.transactiontype",
+        "pk": 4,
+        "fields": {
+            "name": "Discount",
+            "code": "dicount"
+        }
+    },
+    {
+        "model": "transaction.transactiontype",
+        "pk": 5,
+        "fields": {
+            "name": "Withdraw",
+            "code": "withdraw"
+        }
+    },
+    {
+        "model": "transaction.transactiontype",
+        "pk": 6,
+        "fields": {
+            "name": "Return",
+            "code": "return"
+        }
+    },
+    {
+        "model": "transaction.transactiontype",
+        "pk": 7,
+        "fields": {
+            "name": "Game Settlement",
+            "code": "game_settlement"
+        }
+    }
+]

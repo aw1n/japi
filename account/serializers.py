@@ -1,5 +1,6 @@
 import datetime
 from ipware.ip import get_ip
+from ast import literal_eval
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from django.db import IntegrityError
@@ -48,6 +49,7 @@ class AgentSerializer(OptionFieldsFilter, serializers.ModelSerializer):
 
     def create(self, validated_data):
         bank_data = validated_data.pop('bank', None)
+        
         if bank_data:
             validated_data['bank'] = BankValidator.validate(bank_data)
 
@@ -55,6 +57,7 @@ class AgentSerializer(OptionFieldsFilter, serializers.ModelSerializer):
         if agent:
             user = User.objects.create(username=validated_data['username'])
             agent.user = user
+            agent.save()
         return agent
 
     def update(self, instance, validated_data):
@@ -62,7 +65,7 @@ class AgentSerializer(OptionFieldsFilter, serializers.ModelSerializer):
         
         bank_data = validated_data.pop('bank', None)
         if bank_data:
-            BankValidator.validate(bank_data)
+            validated_data['bank'] = BankValidator.validate(bank_data)
 
         for key, val in validated_data.items():
             setattr(instance, key, validated_data[key])
@@ -171,6 +174,7 @@ class MemberSerializer(OptionFieldsFilter, serializers.ModelSerializer):
         if member:
             user = User.objects.create(username=validated_data['username'])
             member.user = user
+            member.save()
         return member
 
     def update(self, instance, validated_data):
@@ -178,7 +182,7 @@ class MemberSerializer(OptionFieldsFilter, serializers.ModelSerializer):
         
         bank_data = validated_data.pop('bank', None)
         if bank_data:
-            BankValidator.validate(bank_data)
+            validated_data['bank'] = BankValidator.validate(bank_data)
 
         for key, val in validated_data.items():
             setattr(instance, key, validated_data[key])
@@ -215,36 +219,40 @@ class MemberSerializer(OptionFieldsFilter, serializers.ModelSerializer):
 
         #remove other fields that are not needed in the response
         ret.pop('user', None)
-        ret.pop('created_at', None)
         ret.pop('updated_at', None)
         ret.pop('updated_by', None)
         ret.pop('referring_url', None)
         ret.pop('initiated_by', None)
 
-        # if opt_expand if provided(whatever value) we need to display more detail of some fields
+        # if opt_expand is provided(whatever value) we need to display more detail of some fields
         if request.GET.get('opt_expand'):
             if instance.level:
+                # ol = literal_eval(instance.level.online_limit)
+                import json
+                import ast
+                import collections
+
+                to_display = collections.OrderedDict()
+                ol = collections.OrderedDict(ast.literal_eval(instance.level.online_limit))
                 ret['level'] = {
                     'id': instance.level.id, 
-                    'name': instance.level.name
+                    'name': instance.level.name,
+                    'online_limit': {
+                        'upper': ol['upper'],
+                        'lower': ol['lower']
+                    }
                 }
 
-            if instance.parent_agent:
-                ret['parent_agent'] = {
-                    'id': instance.parent_agent.id, 
-                    'name': instance.parent_agent.username
-                }
-                
-            if instance.commission_settings:
-                ret['commission_settings'] = {
-                    'id': instance.commission_settings.id, 
-                    'name': instance.commission_settings.name
+            if instance.return_settings:
+                ret['return_settings'] = {
+                    'id': instance.return_settings.id, 
+                    'name': instance.return_settings.name
                 }
 
-            if instance.default_return_settings:
-                ret['default_return_settings'] = {
-                    'id': instance.default_return_settings.id, 
-                    'name': instance.default_return_settings.name
+            if instance.agent:
+                ret['agent'] = {
+                    'id': instance.agent.id, 
+                    'name': instance.agent.username
                 }
 
         return ret

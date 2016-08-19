@@ -1,0 +1,28 @@
+[
+    {
+        "model": "configsettings.commissionsettings",
+        "pk": 1,
+        "fields": {
+            "name": "大股东 comset1",
+            "status": 1,
+            "invest_least": 1234,
+            "deposit_fee": 222,
+            "deposit_fee_max": 333,
+            "withdraw_fee": 444,
+            "withdraw_fee_max": 555
+        }
+    },
+    {
+        "model": "configsettings.commissionsettings",
+        "pk": 2,
+        "fields": {
+            "name": "大股东 comset2",
+            "status": 2,
+            "invest_least": 5678,
+            "deposit_fee": 234,
+            "deposit_fee_max": 234,
+            "withdraw_fee": 234,
+            "withdraw_fee_max": 234
+        }
+    }
+]

@@ -25,6 +25,7 @@ from configsettings import views as settings
 from tracker import views as tracker
 from provider import views as provider
 from transaction import views as transactions
+from notifysvc import views as notifysvc
 
 router = routers.DefaultRouter()
 router.register(r'agent', account.AgentViewSet, 'agent')
@@ -41,10 +42,13 @@ router.register(r'returnsetting', settings.ReturnSettingsViewSet, base_name='ret
 router.register(r'provider', provider.ProviderViewSet, base_name='provider')
 router.register(r'commissionsetting', settings.CommissionSettingsViewSet, base_name='commissionsettings')
 router.register(r'tracker', tracker.LoggingViewSet, base_name='tracker')
+router.register(r'remitpayee', transactions.RemitPayeeViewSet, base_name='remitpayee')
+router.register(r'onlinepayee', transactions.OnlinePayeeViewSet, base_name='onlinepayee')
 router.register(r'remitinfo', transactions.RemitInfoViewSet, base_name='remitinfo')
 router.register(r'transaction', transactions.TransactionViewSet, base_name='transaction')
+router.register(r'onlinepayment', transactions.OnlinePaymentViewSet, base_name='onlinepayment')
 router.register(r'paymenttype', transactions.PaymentTypeViewSet, base_name='paymenttype')
-router.register(r'onlinepayee', transactions.OnlinePayeeViewSet, base_name='paymenttype')
+router.register(r'notifysvc', notifysvc.NotifySvcView, base_name='notifysvc')
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),

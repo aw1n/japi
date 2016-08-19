@@ -4,18 +4,32 @@ from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework import filters, mixins, status, viewsets
 
-from .models import RemitInfo, Transaction, PaymentType, OnlinePayee
-from .serializers import TransactionSerializer, PaymentTypeSerializer, OnlinePayeeSerializer
 from tracker.mixins import LoggingMixin
+from .models import RemitInfo, RemitPayee,Transaction, PaymentType, OnlinePayee
+from .serializers import (RemitInfoSerializer, RemitPayeeSerializer, TransactionSerializer, 
+                          PaymentTypeSerializer, OnlinePayeeSerializer, OnlinePaymentSerializer)
+
+
+class RemitPayeeViewSet(mixins.RetrieveModelMixin, mixins.CreateModelMixin, 
+                   mixins.ListModelMixin, mixins.UpdateModelMixin, 
+                   LoggingMixin, viewsets.GenericViewSet):
+
+    model = RemitPayee
+    queryset = RemitPayee.objects.all()
+    serializer_class = RemitPayeeSerializer
 
 
 class RemitInfoViewSet(mixins.RetrieveModelMixin, mixins.CreateModelMixin, 
                    mixins.ListModelMixin, mixins.UpdateModelMixin, 
                    LoggingMixin, viewsets.GenericViewSet):
 
-    model = Transaction
-    queryset = Transaction.objects.all()
-    serializer_class = TransactionSerializer
+    model = RemitInfo
+    queryset = RemitInfo.objects.all()
+    serializer_class = RemitInfoSerializer
+
+    # model = Transaction
+    # queryset = Transaction.objects.all()
+    # serializer_class = TransactionSerializer
 
 
 class TransactionViewSet(mixins.RetrieveModelMixin, mixins.CreateModelMixin, 
@@ -43,4 +57,13 @@ class OnlinePayeeViewSet(mixins.RetrieveModelMixin, mixins.CreateModelMixin,
     model = OnlinePayee
     queryset = OnlinePayee.objects.all()
     serializer_class = OnlinePayeeSerializer
+
+
+class OnlinePaymentViewSet(mixins.RetrieveModelMixin, mixins.CreateModelMixin, 
+                   mixins.ListModelMixin, mixins.UpdateModelMixin, 
+                   LoggingMixin, viewsets.GenericViewSet):
+
+    model = Transaction
+    queryset = Transaction.objects.all()
+    serializer_class = OnlinePaymentSerializer
     

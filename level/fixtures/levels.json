@@ -3,41 +3,12 @@
         "model": "level.level",
         "pk": 1,
         "fields":{
-            "online_discounts": [{
-                "type": 2
-            }],
-            "name": "",
+            "name": "一般会员",
             "remit_limit": {
                 "lower": "",
                 "upper": ""
             },
-            "online_limit": {
-                "lower": "",
-                "upper": ""
-            },
-            "withdraw_limit": {
-                "lower": "",
-                "upper": ""
-            },
-            "withdraw_fee": {
-                "value": "",
-                "type": "",
-                "hour": "",
-                "times": ""
-            },
-            "memo": "",
-            "service_rate": "",
-            "reg_present": {
-                "status": "",
-                "allow_add": "",
-                "amount": "",
-                "check_amount": ""
-            },
-            "remit_check": {
-                "company": "",
-                "online": "",
-                "card": ""
-            }
+            "service_rate": 1
         }
     }
 ]

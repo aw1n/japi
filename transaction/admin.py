@@ -1,3 +1,8 @@
 from django.contrib import admin
 
-# Register your models here.
+from .models import PaymentType
+
+class PaymentTypeAdmin(admin.ModelAdmin):
+    list_display = ('name', 'code')
+
+admin.site.register(PaymentType, PaymentTypeAdmin)

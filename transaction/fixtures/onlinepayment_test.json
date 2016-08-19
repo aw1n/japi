@@ -1,0 +1,49 @@
+[
+    {
+        "model": "level.level",
+        "pk": 1,
+        "fields": {
+            "name": "level1",
+            "online_limit": "1000,10000",
+            "service_rate": 1
+        }
+    },
+    {
+        "model": "account.member",
+        "pk": 1,
+        "fields": {
+            "username": "MemberUsername",
+            "real_name": "Real Name",
+            "level": 1,
+            "created_at": "2016-08-09 06:11:49"
+        }
+    },
+    {
+        "model": "transaction.paymenttype",
+        "pk": 1,
+        "fields": {
+            "code": "HCP",
+            "name": "Huichao Payment",
+            "payment_type": 1,
+            "function_name": "tide_payment",
+            "data_parser": 2
+        }
+    },
+    {
+        "model": "transaction.onlinepayee",
+        "pk": 1,
+        "fields": {
+            "name": "online payee1",
+            "board_url": "asdf",
+            "merchant_num": "asdf",
+            "certificate": "asdf",
+            "merchant_account": "asdf",
+            "expired_in": 1,
+            "memo": "asdf",
+            "sum_fund": 1.50,
+            "payment_type": 1,
+            "level": [1]
+        }
+    }
+
+]

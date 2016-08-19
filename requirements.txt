@@ -6,3 +6,5 @@ MySQL-python==1.2.5
 django-filter
 django-ipware
 pillow
+django-cors-headers
+django-oauth-toolkit

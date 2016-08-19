@@ -32,7 +32,7 @@ class LevelViewSet(mixins.RetrieveModelMixin,
         Handles HTTP requests such as POST, GET, PUT
     '''
 
-    permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
+    # permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
     queryset = Level.objects.all()
     renderer_classes = [renderers.JSONRenderer]
     serializer_class = LevelSerializer

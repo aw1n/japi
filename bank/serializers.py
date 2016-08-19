@@ -15,6 +15,17 @@ class BankInfoSerializer(serializers.ModelSerializer):
         extra_kwargs = {'id':{'read_only': False, 'required': False},
                         'bank':{'read_only': False, 'required': False}}
 
+    def to_representation(self, instance):
+        request = self.context['request']
+        ret = super(BankInfoSerializer, self).to_representation(instance)
+
+        if request.GET.get('opt_expand'):
+            ret['bank'] = {
+                'id' : instance.bank.id,
+                'name' : instance.bank.name
+            }
+        return ret
+
 class BankSerializer(serializers.ModelSerializer):
     '''
     @class BankSerializer
