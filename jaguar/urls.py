@@ -27,6 +27,9 @@ from provider import views as provider
 from transaction import views as transactions
 from notifysvc import views as notifysvc
 
+from loginsvc.views import login
+from account.views import generate_verification_code
+
 router = routers.DefaultRouter()
 router.register(r'agent', account.AgentViewSet, 'agent')
 router.register(r'agentapplication', account.AgentApplicationViewSet, 'agentapplication')
@@ -42,15 +45,22 @@ router.register(r'returnsetting', settings.ReturnSettingsViewSet, base_name='ret
 router.register(r'provider', provider.ProviderViewSet, base_name='provider')
 router.register(r'commissionsetting', settings.CommissionSettingsViewSet, base_name='commissionsettings')
 router.register(r'tracker', tracker.LoggingViewSet, base_name='tracker')
+router.register(r'loginrecord', tracker.LoginRecordViewSet, base_name='loginrecord')
 router.register(r'remitpayee', transactions.RemitPayeeViewSet, base_name='remitpayee')
 router.register(r'onlinepayee', transactions.OnlinePayeeViewSet, base_name='onlinepayee')
 router.register(r'remitinfo', transactions.RemitInfoViewSet, base_name='remitinfo')
 router.register(r'transaction', transactions.TransactionViewSet, base_name='transaction')
 router.register(r'onlinepayment', transactions.OnlinePaymentViewSet, base_name='onlinepayment')
 router.register(r'paymenttype', transactions.PaymentTypeViewSet, base_name='paymenttype')
+router.register(r'register/member', account.MemberRegistrationViewSet, 'memberregistration')
 router.register(r'notifysvc', notifysvc.NotifySvcView, base_name='notifysvc')
+router.register(r'withdraw', transactions.WithdrawTransactionViewSet, base_name='withdraw')
+router.register(r'balance/withdraw', transactions.BalanceViewSet, base_name='balance_withdraw')
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^api/', include(router.urls)),
+    # url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
+    url(r'^login/$', login, name='login'),
+    url(r'^verification_code/$', generate_verification_code, name='generate_verification_code')
 ]

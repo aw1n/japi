@@ -5,13 +5,14 @@ from rest_framework.response import Response
 from rest_framework import filters, mixins, status, viewsets
 
 from tracker.mixins import LoggingMixin
-from .models import RemitInfo, RemitPayee,Transaction, PaymentType, OnlinePayee
-from .serializers import (RemitInfoSerializer, RemitPayeeSerializer, TransactionSerializer, 
-                          PaymentTypeSerializer, OnlinePayeeSerializer, OnlinePaymentSerializer)
+from .models import RemitInfo, RemitPayee,Transaction, PaymentType, OnlinePayee, Balance
+from .serializers import (RemitInfoSerializer, RemitPayeeSerializer, TransactionSerializer,
+                          PaymentTypeSerializer, OnlinePayeeSerializer, OnlinePaymentSerializer,
+                          WithdrawTransactionSerializer, BalanceTransactionSerializer)
 
 
-class RemitPayeeViewSet(mixins.RetrieveModelMixin, mixins.CreateModelMixin, 
-                   mixins.ListModelMixin, mixins.UpdateModelMixin, 
+class RemitPayeeViewSet(mixins.RetrieveModelMixin, mixins.CreateModelMixin,
+                   mixins.ListModelMixin, mixins.UpdateModelMixin,
                    LoggingMixin, viewsets.GenericViewSet):
 
     model = RemitPayee
@@ -19,8 +20,8 @@ class RemitPayeeViewSet(mixins.RetrieveModelMixin, mixins.CreateModelMixin,
     serializer_class = RemitPayeeSerializer
 
 
-class RemitInfoViewSet(mixins.RetrieveModelMixin, mixins.CreateModelMixin, 
-                   mixins.ListModelMixin, mixins.UpdateModelMixin, 
+class RemitInfoViewSet(mixins.RetrieveModelMixin, mixins.CreateModelMixin,
+                   mixins.ListModelMixin, mixins.UpdateModelMixin,
                    LoggingMixin, viewsets.GenericViewSet):
 
     model = RemitInfo
@@ -32,8 +33,8 @@ class RemitInfoViewSet(mixins.RetrieveModelMixin, mixins.CreateModelMixin,
     # serializer_class = TransactionSerializer
 
 
-class TransactionViewSet(mixins.RetrieveModelMixin, mixins.CreateModelMixin, 
-                   mixins.ListModelMixin, mixins.UpdateModelMixin, 
+class TransactionViewSet(mixins.RetrieveModelMixin, mixins.CreateModelMixin,
+                   mixins.ListModelMixin, mixins.UpdateModelMixin,
                    LoggingMixin, viewsets.GenericViewSet):
 
     model = Transaction
@@ -41,8 +42,8 @@ class TransactionViewSet(mixins.RetrieveModelMixin, mixins.CreateModelMixin,
     serializer_class = TransactionSerializer
 
 
-class PaymentTypeViewSet(mixins.RetrieveModelMixin, mixins.CreateModelMixin, 
-                   mixins.ListModelMixin, mixins.UpdateModelMixin, 
+class PaymentTypeViewSet(mixins.RetrieveModelMixin, mixins.CreateModelMixin,
+                   mixins.ListModelMixin, mixins.UpdateModelMixin,
                    LoggingMixin, viewsets.GenericViewSet):
 
     model = PaymentType
@@ -50,8 +51,8 @@ class PaymentTypeViewSet(mixins.RetrieveModelMixin, mixins.CreateModelMixin,
     serializer_class = PaymentTypeSerializer
 
 
-class OnlinePayeeViewSet(mixins.RetrieveModelMixin, mixins.CreateModelMixin, 
-                   mixins.ListModelMixin, mixins.UpdateModelMixin, 
+class OnlinePayeeViewSet(mixins.RetrieveModelMixin, mixins.CreateModelMixin,
+                   mixins.ListModelMixin, mixins.UpdateModelMixin,
                    LoggingMixin, viewsets.GenericViewSet):
 
     model = OnlinePayee
@@ -59,11 +60,32 @@ class OnlinePayeeViewSet(mixins.RetrieveModelMixin, mixins.CreateModelMixin,
     serializer_class = OnlinePayeeSerializer
 
 
-class OnlinePaymentViewSet(mixins.RetrieveModelMixin, mixins.CreateModelMixin, 
-                   mixins.ListModelMixin, mixins.UpdateModelMixin, 
+class OnlinePaymentViewSet(mixins.RetrieveModelMixin, mixins.CreateModelMixin,
+                   mixins.ListModelMixin, mixins.UpdateModelMixin,
                    LoggingMixin, viewsets.GenericViewSet):
 
     model = Transaction
+    permission_classes = []
     queryset = Transaction.objects.all()
     serializer_class = OnlinePaymentSerializer
-    
+
+
+class WithdrawTransactionViewSet(mixins.CreateModelMixin,
+                   LoggingMixin, viewsets.GenericViewSet):
+
+    model = Transaction
+    permission_classes = []
+    queryset = Transaction.objects.all()
+    serializer_class = WithdrawTransactionSerializer
+
+
+class BalanceViewSet(mixins.RetrieveModelMixin, mixins.CreateModelMixin,
+                    mixins.ListModelMixin, mixins.UpdateModelMixin,
+                    LoggingMixin, viewsets.GenericViewSet):
+    '''
+    '''
+
+    model = Balance
+    permission_classes = []
+    queryset = Balance.objects.all()
+    serializer_class = BalanceTransactionSerializer

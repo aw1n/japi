@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from level.models import Level
 from configsettings.models import ReturnSettings, CommissionSettings
 from bank.models import BankInfo
+from tracker.models import LoginRecord
 
 STATUS_OPTIONS = (
 	(0, 'Rejected'),
@@ -116,11 +117,14 @@ class Member(models.Model):
 	agent = models.ForeignKey(Agent, null=True, blank=True, related_name='member_agent')
 	referring_url = models.CharField(max_length=255, blank=True, null=True)
 	initiated_by = models.CharField(max_length=255, blank=True, null=True)
-	ip = models.CharField(max_length=255, blank=True, null=True)
+	register_ip = models.CharField(max_length=255, blank=True, null=True)
 	created_at = models.DateTimeField(auto_now=False, auto_now_add=True)
 	created_by = models.ForeignKey(User,related_name="member_created_by", null=True, blank=True)
 	updated_at = models.DateTimeField(auto_now=True, auto_now_add=False, null=True, blank=True)
 	updated_by = models.ForeignKey(User,related_name="member_updated_by", null=True, blank=True)
+	ip_repeated = models.NullBooleanField(default=False, null=True, blank=True)
+	last_login = models.ForeignKey(LoginRecord, null=True, blank=True, related_name='last_login_info')
+	withdraw_password = models.CharField(null=True, blank=True, max_length=100)
 
 	class Meta:
 		db_table = 'account_member'

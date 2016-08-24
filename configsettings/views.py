@@ -21,6 +21,7 @@ from configsettings.filters import DiscountFilter, ReturnRateConfigFilter, Retur
 from jaguar.utils import ESPagination
 from provider.models import Provider
 from gametype.models import GameType
+from loginsvc.permissions import IsAdmin, IsAgent, IsMember
 
 import django_filters
 import collections
@@ -39,6 +40,7 @@ class DiscountViewSet(mixins.RetrieveModelMixin,
     '''
 
     queryset = Discount.objects.all()
+    permission_classes = [IsAdmin]
     renderer_classes = [renderers.JSONRenderer]
     serializer_class = DiscountSerializer
     filter_class = DiscountFilter
@@ -59,6 +61,7 @@ class ReturnSettingsViewSet(mixins.RetrieveModelMixin,
         Handles HTTP requests such as POST, GET, PUT
     '''
 
+    permission_classes = [IsAdmin]
     queryset = ReturnSettings.objects.all()
     renderer_classes = [renderers.JSONRenderer]
     serializer_class = ReturnSettingsSerializer
@@ -201,6 +204,7 @@ class CommissionSettingsViewSet(mixins.RetrieveModelMixin,
         Handles HTTP requests GET, POST, PUT
     '''
 
+    permission_classes = [IsAdmin]
     queryset = CommissionSettings.objects.all()
     renderer_classes = [renderers.JSONRenderer]
     serializer_class = CommissionSettingsSerializer

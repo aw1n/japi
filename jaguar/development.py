@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'oauth2_provider',
     'rest_framework',
     'account',
     'level',
@@ -48,7 +49,9 @@ INSTALLED_APPS = [
     'tracker',
     'transaction',
     'corsheaders',
-    'rest_framework.authtoken'
+    # 'rest_framework.authtoken',
+    'loginsvc',
+    'coverage',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -78,8 +81,21 @@ CORS_ALLOW_METHODS = (
 
 ROOT_URLCONF = 'jaguar.urls'
 
+OAUTH2_PROVIDER = {
+    # this is the list of available scopes
+    'SCOPES': {'read': 'Read scope', 'write': 'Write scope'},
+    'ACCESS_TOKEN_EXPIRE_SECONDS': 604800,
+    'OAUTH_DELETE_EXPIRED':True,
+}
+
 REST_FRAMEWORK = {
     # 'EXCEPTION_HANDLER': 'jaguar.utils.custom_exception_handler',
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'oauth2_provider.ext.rest_framework.OAuth2Authentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
     'DEFAULT_PAGINATION_CLASS': 'jaguar.utils.ESPagination',
     'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',)
 }
@@ -143,7 +159,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Shanghai'
 
 USE_I18N = True
 
@@ -156,6 +172,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 
 STATIC_URL = '/static/'
+
+CAPTCHA_FILES = os.path.join(BASE_DIR, 'captcha')
+STATICFILES_DIRS = (CAPTCHA_FILES,)
 
 TEST_RUNNER = 'xmlrunner.extra.djangotestrunner.XMLTestRunner'
 TEST_OUTPUT_VERBOSE = True

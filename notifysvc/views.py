@@ -17,7 +17,7 @@ class NotifySvcView(LoggingMixin, viewsets.GenericViewSet):
 
     def create(self, request):
         # notify_task = NotifySvcTask.delay()
-        transaction_id = request.data.get('Billno')
+        transaction_id = request.data.get('BillNo')
         transaction = Transaction.objects.get(transaction_id=transaction_id)
 
         if request.data.get('Succeed') == "88":

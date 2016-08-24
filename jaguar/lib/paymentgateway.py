@@ -39,22 +39,24 @@ class PaymentGateway:
         merchant_num = merchant.merchant_num
         merchant_key = merchant.certificate
         amount = obj.amount
-        created_at = obj.created_at
+        created_at = obj.created_at.strftime('%Y%m%d%H%M%S')
         transaction_id = obj.transaction_id
-        return_url = ''
+        return_url = 'http://tc378.net/api'
+        advice_url = 'http://tc378.net/api/notifysvc/'
 
         for_sign = [merchant_num, transaction_id, amount, return_url, merchant_key]
-        signature = PaymentGateway.generate_signature(for_sign).upper()
+        signature = hashlib.md5('{0}&{1}&{2}&{3}&{4}'.format(merchant_num, transaction_id, amount, return_url, merchant_key)).hexdigest()
 
         return {
-            'AdviceURL': 'http://tc378.net/api/notifysvc/',
-            'ReturnURL': 'https://www.google.com.ph',
+            'AdviceURL': advice_url,
+            'ReturnURL': return_url,
             'defaultBankNumber': '',
             'MerNo': merchant_num,
-            'Billno': transaction_id,
+            'BillNo': transaction_id,
             'Amount': amount,
             'orderTime': created_at,
             'return_params': '',
-            'SignInfo': signature,
+            'SignInfo': signature.upper(),
+            'merchant_key': merchant_key,
 
         }

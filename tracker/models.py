@@ -47,3 +47,17 @@ class BaseAPIRequestLog(models.Model):
 
 class APIRequestLog(BaseAPIRequestLog):
     pass
+
+
+class LoginRecord(models.Model):
+    '''
+    '''
+
+    ipaddr = models.GenericIPAddressField()
+    address = models.CharField(max_length=250)
+    isp = models.CharField(max_length=250)
+    logindate = models.DateTimeField()
+
+
+    class Meta:
+        db_table = 'tracker_loginrecord'

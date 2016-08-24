@@ -1,18 +1,19 @@
 import uuid
 import hashlib
 import datetime
+import ast
 from rest_framework import serializers
 from django.contrib.auth.models import User
 
 from account.models import Member
 from level.models import Level
-from .models import RemitInfo, RemitPayee, Transaction, TransactionType, PaymentType, OnlinePayee
+from .models import RemitInfo, RemitPayee, Transaction, TransactionType, PaymentType, OnlinePayee, Balance
 from jaguar.lib.validators import RequiredFieldValidator
 from jaguar.lib.paymentgateway import PaymentGateway
 
 
 class RemitInfoSerializer(serializers.ModelSerializer):
-    
+
     class Meta:
         model = RemitInfo
         fields = ('id', 'bank', 'way', 'depositor', 'deposited_at', 'created_at', 'transaction_remit_info')
@@ -105,7 +106,7 @@ class TransactionSerializer(serializers.ModelSerializer):
 class OnlinePaymentSerializer(TransactionSerializer):
     class Meta:
         model = Transaction
-        
+
     def generate_transaction_id(self):
         unique_id = str(uuid.uuid4().fields[0])
         datetime_now = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
@@ -135,6 +136,123 @@ class OnlinePaymentSerializer(TransactionSerializer):
         merchant_num = request.data.get('merchant_num')
         if merchant_num:
             return PaymentGateway.generate_data(merchant_num, obj)
-            
+
         else:
             raise NotFound('Merchant number not found.')
+
+
+class WithdrawTransactionSerializer(TransactionSerializer):
+    '''
+    '''
+
+    class Meta:
+        model = Transaction
+
+    def generate_transaction_id(self):
+        '''
+        '''
+
+        unique_id = str(uuid.uuid4().fields[0])
+        datetime_now = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+        return '{}{}'.format(datetime_now,unique_id)
+
+    def create(self, data):
+        '''
+        '''
+
+        transaction = Transaction.objects.create(**data)
+        return transaction
+
+    def validate(self, data):
+        '''
+        '''
+
+        request = self.context['request']
+        RequiredFieldValidator.validate(data, ('amount',))
+
+        if not request.data.get('member_id'):
+            raise serializers.ValidationError('Member id is required')
+        if not request.data.get('withdraw_password'):
+            raise serializers.ValidationError('Withdraw password is required')
+
+        try:
+            member = Member.objects.get(pk=request.data.get('member_id'))
+            amount = float(data['amount'])
+        except DoesNotExist:
+            raise serializers.ValidationError('Member not found!')
+        except ValueError:
+            raise serializers.ValidationError('Invalid amount...')
+
+        if request.data.get('withdraw_password') != member.withdraw_password:
+            raise serializers.ValidationError('Password is incorrect!')
+
+        member_lv = member.level
+        withdraw_limit = ast.literal_eval(member_lv.withdraw_limit)
+        withdraw_fee_dict = ast.literal_eval(member_lv.withdraw_fee)
+
+        withdraw_fee = 0
+        if withdraw_fee_dict.get('value'):
+            withdraw_fee = float(withdraw_fee_dict.get('value'))
+        balance = member.balance_member.all()[0].balance
+
+        if not amount + withdraw_fee <= balance:
+            raise serializers.ValidationError('Insufficient balance...')
+
+        upper_withdraw_limit = balance
+        lower_withdraw_limit = 0
+        if withdraw_limit.get('upper'):
+            upper_withdraw_limit = float(withdraw_limit.get('upper'))
+        if withdraw_limit.get('lower'):
+            lower_withdraw_limit = float(withdraw_limit.get('lower'))
+
+        if amount >= lower_withdraw_limit and amount <= upper_withdraw_limit:
+            data['amount'] = amount
+            data['status'] = 3
+            data['member_id'] = member.id
+            data['transaction_id'] = self.generate_transaction_id()
+            data['transaction_type'] = TransactionType.objects.get(code='withdraw')
+        else:
+            raise serializers.ValidationError('Invalid amount...')
+        return data
+
+
+class BalanceTransactionSerializer(serializers.ModelSerializer):
+    '''
+    '''
+
+    class Meta:
+        model = Balance
+
+
+    def validate(self, data):
+        '''
+        '''
+
+        request = self.context['request']
+        try:
+            transaction = Transaction.objects.get(transaction_id=request.data.get('transaction_id'))
+        except DoesNotExist:
+            raise serializers.ValidationError('Transaction not found!')
+        data['amount'] = transaction.amount
+        data['transaction'] = transaction
+        if transaction.transaction_type == TransactionType.objects.get(code='withdraw'):
+            member = transaction.member
+            member_lv = member.level
+            withdraw_fee_dict = ast.literal_eval(member_lv.withdraw_fee)
+            withdraw_fee = 0
+            if withdraw_fee_dict.get('value'):
+                withdraw_fee = float(withdraw_fee_dict.get('value'))
+            data['withdraw_fee'] = withdraw_fee
+            data['transaction_type'] = 'withdraw'
+
+        return data
+
+    def create(self, validated_data):
+        member = validated_data.get('transaction').member
+        balance_inst = Balance.objects.get(member=member.pk)
+        if validated_data['transaction_type'] == 'withdraw':
+            balance = balance_inst.balance
+            balance -= validated_data['amount'] + validated_data['withdraw_fee']
+            setattr(balance_inst, 'balance', balance)
+        balance_inst.save()
+        return balance_inst

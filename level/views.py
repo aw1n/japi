@@ -12,6 +12,7 @@ from configsettings.models import Discount
 from django.contrib import admin
 admin.autodiscover()
 from rest_framework import permissions
+from loginsvc.permissions import IsAdmin, IsAgent, IsMember
 from oauth2_provider.ext.rest_framework import TokenHasReadWriteScope, TokenHasScope
 
 import django_filters
@@ -32,7 +33,8 @@ class LevelViewSet(mixins.RetrieveModelMixin,
         Handles HTTP requests such as POST, GET, PUT
     '''
 
-    # permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
+    # Only admin can access Level APIs
+    permission_classes = [IsAdmin]
     queryset = Level.objects.all()
     renderer_classes = [renderers.JSONRenderer]
     serializer_class = LevelSerializer
